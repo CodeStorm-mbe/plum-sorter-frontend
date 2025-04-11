@@ -62,7 +62,7 @@ plum-sorter/
 2. Clonez ce dépôt
 3. Installez les dépendances :
    ```
-   cd plum-sorter
+   cd plum-sorter-frontend
    npm install
    ```
 4. Démarrez le serveur de développement :
@@ -83,7 +83,7 @@ Les fichiers de production seront générés dans le dossier `build`.
 
 ## Intégration avec le backend
 
-Cette interface frontend est conçue pour communiquer avec un backend via API. Pour l'instant, les données sont simulées, mais vous pouvez facilement intégrer votre propre API en modifiant les appels dans les composants appropriés.
+Cette interface frontend est conçue pour communiquer avec un backend via API. Pour l'instant, les données sont simulées.
 
 ## Crédits
 
