@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&family=Montserrat:wght@300;400;500&family=Orbitron:wght@400;500;600;700&family=Poppins:wght@300;400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 0.5rem;
+}
+
+body {
+  @apply bg-gradient-to-br from-gradient-start to-gradient-end min-h-screen text-white font-body;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-title;
+}
+
+.card {
+  @apply bg-background-card rounded-lg p-6 backdrop-blur-sm;
+}
+
+.btn-primary {
+  @apply bg-accent-emerald hover:bg-opacity-90 text-white font-semibold py-2 px-6 rounded-md transition-all duration-300 shadow-lg;
+}
+
+.btn-secondary {
+  @apply bg-accent-gold hover:bg-opacity-90 text-[#1a1a2e] font-semibold py-2 px-6 rounded-md transition-all duration-300 shadow-lg;
+}
+
+.upload-zone {
+  @apply border-2 border-dashed border-white/30 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-accent-gold transition-colors;
+}
+
+.category-badge {
+  @apply px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.category-badge.good {
+  @apply bg-plum-good text-white;
+}
+
+.category-badge.unripe {
+  @apply bg-plum-unripe text-[#1a1a2e]; /* corrigé ici aussi */
+}
+
+.category-badge.spotted {
+  @apply bg-plum-spotted text-white;
+}
+
+.category-badge.cracked {
+  @apply bg-plum-cracked text-white;
+}
+
+.category-badge.bruised {
+  @apply bg-plum-bruised text-white;
+}
+
+.category-badge.rotten {
+  @apply bg-plum-rotten text-white;
+}
