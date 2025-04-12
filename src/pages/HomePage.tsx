@@ -136,7 +136,7 @@ const HomePage: React.FC = () => {
                   />
 
                   <motion.img
-                      src="/plum-3d.png"
+                      src="/src/assets/Images/plum-3d.png"
                       alt="Illustration 3D de prune"
                       className="relative z-10 w-full h-auto floating"
                       onError={(e) => {
