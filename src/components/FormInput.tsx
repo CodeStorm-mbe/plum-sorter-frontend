@@ -5,17 +5,20 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { Eye, EyeOff } from "lucide-react"
 
+// src/components/FormInput.tsx
+
 interface FormInputProps {
-    id: string
-    label: string
-    type: string
-    placeholder?: string
-    value: string
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-    required?: boolean
-    error?: string
-    icon?: React.ReactNode
-    autoComplete?: string
+    id: string;
+    name: string; // Ajout de cette propriété
+    label: string;
+    type: string;
+    placeholder?: string;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    required?: boolean;
+    error?: string;
+    icon?: React.ReactNode;
+    autoComplete?: string;
 }
 
 const FormInput: React.FC<FormInputProps> = ({

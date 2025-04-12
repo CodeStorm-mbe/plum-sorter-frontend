@@ -2,24 +2,28 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 
-// Type pour l'utilisateur
+// Types pour les utilisateurs et l'authentification
 export interface User {
     id: string
-    name: string
     email: string
-    // Vous pouvez ajouter d'autres propriétés selon vos besoins
+    name: string
+    role: "user" | "admin"
+    avatar?: string
+    createdAt: string
 }
 
-// Type pour le contexte d'authentification
 interface AuthContextType {
     user: User | null
+    isLoading: boolean
     isAuthenticated: boolean
     login: (email: string, password: string) => Promise<void>
     register: (name: string, email: string, password: string) => Promise<void>
     logout: () => void
-    updateProfile: (data: Partial<User>) => Promise<void>
-    updatePassword: (currentPassword: string, newPassword: string) => Promise<void>
+    updateProfile: (userData: Partial<User>) => Promise<void>
+    error: string | null
+    clearError: () => void
 }
 
 // Création du contexte
@@ -34,104 +38,174 @@ export const useAuth = () => {
     return context
 }
 
+// Simulation d'une API d'authentification
+const authAPI = {
+    login: async (email: string, password: string): Promise<User> => {
+        // Simuler un délai réseau
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+        // Vérifier les identifiants (simulation)
+        if (email === "demo@triprune.com" && password === "password") {
+            return {
+                id: "user-1",
+                email: "demo@triprune.com",
+                name: "Utilisateur Démo",
+                role: "user",
+                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=demo",
+                createdAt: new Date().toISOString(),
+            }
+        }
+
+        // Vérifier si l'utilisateur existe dans le localStorage
+        const users = JSON.parse(localStorage.getItem("triprune_users") || "[]")
+        const user = users.find((u: any) => u.email === email)
+
+        if (user && user.password === password) {
+            // Ne pas renvoyer le mot de passe
+            const { password, ...userWithoutPassword } = user
+            return userWithoutPassword
+        }
+
+        throw new Error("Identifiants invalides")
+    },
+
+    register: async (name: string, email: string, password: string): Promise<User> => {
+        // Simuler un délai réseau
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+        // Vérifier si l'email est déjà utilisé
+        const users = JSON.parse(localStorage.getItem("triprune_users") || "[]")
+        if (users.some((u: any) => u.email === email)) {
+            throw new Error("Cet email est déjà utilisé")
+        }
+
+        // Créer un nouvel utilisateur
+        const newUser = {
+            id: `user-${Date.now()}`,
+            email,
+            name,
+            password, // Dans une vraie application, le mot de passe serait haché
+            role: "user" as const,
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
+            createdAt: new Date().toISOString(),
+        }
+
+        // Sauvegarder l'utilisateur
+        users.push(newUser)
+        localStorage.setItem("triprune_users", JSON.stringify(users))
+
+        // Ne pas renvoyer le mot de passe
+        const { password: _, ...userWithoutPassword } = newUser
+        return userWithoutPassword
+    },
+
+    updateProfile: async (userId: string, userData: Partial<User>): Promise<User> => {
+        // Simuler un délai réseau
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+        // Mettre à jour l'utilisateur dans le localStorage
+        const users = JSON.parse(localStorage.getItem("triprune_users") || "[]")
+        const userIndex = users.findIndex((u: any) => u.id === userId)
+
+        if (userIndex === -1) {
+            throw new Error("Utilisateur non trouvé")
+        }
+
+        // Mettre à jour les données de l'utilisateur
+        users[userIndex] = { ...users[userIndex], ...userData }
+        localStorage.setItem("triprune_users", JSON.stringify(users))
+
+        // Ne pas renvoyer le mot de passe
+        const { password, ...userWithoutPassword } = users[userIndex]
+        return userWithoutPassword
+    },
+}
+
 // Provider du contexte d'authentification
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null)
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+    const [isLoading, setIsLoading] = useState<boolean>(true)
+    const [error, setError] = useState<string | null>(null)
+    const navigate = useNavigate()
 
     // Vérifier si l'utilisateur est déjà connecté au chargement
     useEffect(() => {
-        const storedUser = localStorage.getItem("user")
+        const storedUser = localStorage.getItem("triprune_current_user")
         if (storedUser) {
-            try {
-                const parsedUser = JSON.parse(storedUser)
-                setUser(parsedUser)
-                setIsAuthenticated(true)
-            } catch (error) {
-                console.error("Erreur lors de la récupération des données utilisateur:", error)
-                localStorage.removeItem("user")
-            }
+            setUser(JSON.parse(storedUser))
         }
+        setIsLoading(false)
     }, [])
 
     // Fonction de connexion
     const login = async (email: string, password: string) => {
-        // Dans une application réelle, vous feriez un appel API ici
-        // Simulation d'une connexion réussie
-        const mockUser: User = {
-            id: "user-123",
-            name: "Utilisateur Test",
-            email: email,
+        try {
+            setIsLoading(true)
+            setError(null)
+            const userData = await authAPI.login(email, password)
+            setUser(userData)
+            localStorage.setItem("triprune_current_user", JSON.stringify(userData))
+            navigate("/dashboard")
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Une erreur est survenue lors de la connexion")
+        } finally {
+            setIsLoading(false)
         }
-
-        // Stocker l'utilisateur dans le localStorage
-        localStorage.setItem("user", JSON.stringify(mockUser))
-
-        // Mettre à jour l'état
-        setUser(mockUser)
-        setIsAuthenticated(true)
     }
 
     // Fonction d'inscription
     const register = async (name: string, email: string, password: string) => {
-        // Dans une application réelle, vous feriez un appel API ici
-        // Simulation d'une inscription réussie
-        const mockUser: User = {
-            id: "user-" + Math.floor(Math.random() * 1000),
-            name: name,
-            email: email,
+        try {
+            setIsLoading(true)
+            setError(null)
+            const userData = await authAPI.register(name, email, password)
+            setUser(userData)
+            localStorage.setItem("triprune_current_user", JSON.stringify(userData))
+            navigate("/dashboard")
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Une erreur est survenue lors de l'inscription")
+        } finally {
+            setIsLoading(false)
         }
-
-        // Stocker l'utilisateur dans le localStorage
-        localStorage.setItem("user", JSON.stringify(mockUser))
-
-        // Mettre à jour l'état
-        setUser(mockUser)
-        setIsAuthenticated(true)
     }
 
     // Fonction de déconnexion
     const logout = () => {
-        // Supprimer l'utilisateur du localStorage
-        localStorage.removeItem("user")
-
-        // Mettre à jour l'état
         setUser(null)
-        setIsAuthenticated(false)
+        localStorage.removeItem("triprune_current_user")
+        navigate("/")
     }
 
     // Fonction de mise à jour du profil
-    const updateProfile = async (data: Partial<User>) => {
+    const updateProfile = async (userData: Partial<User>) => {
         if (!user) return
 
-        // Dans une application réelle, vous feriez un appel API ici
-        // Simulation d'une mise à jour réussie
-        const updatedUser = { ...user, ...data }
-
-        // Mettre à jour le localStorage
-        localStorage.setItem("user", JSON.stringify(updatedUser))
-
-        // Mettre à jour l'état
-        setUser(updatedUser)
+        try {
+            setIsLoading(true)
+            setError(null)
+            const updatedUser = await authAPI.updateProfile(user.id, userData)
+            setUser(updatedUser)
+            localStorage.setItem("triprune_current_user", JSON.stringify(updatedUser))
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Une erreur est survenue lors de la mise à jour du profil")
+        } finally {
+            setIsLoading(false)
+        }
     }
 
-    // Fonction de mise à jour du mot de passe
-    const updatePassword = async (currentPassword: string, newPassword: string) => {
-        // Dans une application réelle, vous feriez un appel API ici
-        // Simulation d'une mise à jour réussie
-        console.log("Mot de passe mis à jour avec succès")
-        // Pas besoin de mettre à jour l'état ici car le mot de passe n'est pas stocké dans l'état
-    }
+    // Fonction pour effacer les erreurs
+    const clearError = () => setError(null)
 
-    // Valeur du contexte
     const value = {
         user,
-        isAuthenticated,
+        isLoading,
+        isAuthenticated: !!user,
         login,
         register,
         logout,
         updateProfile,
-        updatePassword,
+        error,
+        clearError,
     }
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

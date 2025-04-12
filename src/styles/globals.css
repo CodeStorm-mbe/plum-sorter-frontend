@@ -4,6 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Importer les styles RTL */
+@import url("./rtl.css");
+
 :root {
   --radius: 0.5rem;
 }

@@ -3,10 +3,10 @@
 import type React from "react"
 import { motion } from "framer-motion"
 import Navbar from "../components/Navbar"
-import RegisterForm from "../components/auth/RegisterForm"
+import ForgotPasswordForm from "../components/auth/ForgotPasswordForm"
 import PageTransition from "../components/PageTransition"
 
-const RegisterPage: React.FC = () => {
+const ForgotPasswordPage: React.FC = () => {
     return (
         <PageTransition>
             <div className="min-h-screen">
@@ -26,7 +26,7 @@ const RegisterPage: React.FC = () => {
                             transition={{ duration: 0.5 }}
                         >
               <span className="bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
-                Créer un compte
+                Mot de passe oublié
               </span>
                         </motion.h1>
 
@@ -36,10 +36,10 @@ const RegisterPage: React.FC = () => {
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
                         >
-                            Rejoignez TriPrune pour accéder à toutes les fonctionnalités d'analyse de prunes
+                            Réinitialisez votre mot de passe pour récupérer l'accès à votre compte
                         </motion.p>
 
-                        <RegisterForm />
+                        <ForgotPasswordForm />
                     </motion.div>
                 </div>
 
@@ -54,4 +54,4 @@ const RegisterPage: React.FC = () => {
     )
 }
 
-export default RegisterPage
+export default ForgotPasswordPage

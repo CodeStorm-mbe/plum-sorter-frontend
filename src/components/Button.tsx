@@ -4,14 +4,15 @@ import type React from "react"
 import { motion } from "framer-motion"
 
 interface ButtonProps {
-  children: React.ReactNode
-  variant?: "primary" | "secondary" | "outline" | "ghost"
-  onClick?: () => void
-  className?: string
-  icon?: React.ReactNode
-  disabled?: boolean
-  size?: "sm" | "md" | "lg"
-  withGlow?: boolean
+    children: React.ReactNode;
+    variant?: "primary" | "secondary" | "outline" | "ghost";
+    onClick?: () => void;
+    className?: string;
+    icon?: React.ReactNode;
+    disabled?: boolean;
+    size?: "sm" | "md" | "lg";
+    withGlow?: boolean;
+    type?: "button" | "submit" | "reset"; // Ajout de cette propriété
 }
 
 const Button: React.FC<ButtonProps> = ({

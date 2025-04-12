@@ -5,11 +5,12 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Check } from "lucide-react"
 
 interface FormCheckboxProps {
-    id: string
-    label: React.ReactNode
-    checked: boolean
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-    required?: boolean
+    id: string;
+    name: string; // Ajout de cette propriété
+    label: React.ReactNode;
+    checked: boolean;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    required?: boolean;
 }
 
 const FormCheckbox: React.FC<FormCheckboxProps> = ({ id, label, checked, onChange, required = false }) => {
