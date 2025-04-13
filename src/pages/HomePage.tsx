@@ -311,7 +311,7 @@ const HomePage: React.FC = () => {
                   <Brain className="h-6 w-6 text-accent-primary" />
                 </div>
               </motion.div>
-              <p className="text-white/60">© 2025 TriPrune - Projet JCIA Hackathon</p>
+              <p className="text-white/60">© 2025 TriPrune - CODESTORM</p>
             </div>
           </footer>
         </div>

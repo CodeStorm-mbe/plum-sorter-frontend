@@ -4,18 +4,28 @@ import type React from "react"
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Link } from "react-router-dom"
-import { User, Settings, LogOut, ChevronDown } from "lucide-react"
+// Ajouter l'import pour les icônes Sun et Moon
+import { User, Settings, LogOut, ChevronDown, Sun, Moon } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 // Importer le hook useLanguage
 import { useLanguage } from "../contexts/LanguageContext"
+// Ajouter l'import pour le contexte de thème
+import { useTheme } from "../contexts/ThemeContext"
 
-// Ajouter l'utilisation du hook dans le composant UserMenu
+// Modifier la fonction UserMenu pour ajouter l'option de thème
 const UserMenu: React.FC = () => {
     const { user, logout, isAuthenticated } = useAuth()
     const { t } = useLanguage()
+    const { theme, setTheme } = useTheme()
     const [isOpen, setIsOpen] = useState(false)
 
     if (!isAuthenticated || !user) return null
+
+    // Fonction pour basculer entre les thèmes
+    const toggleTheme = () => {
+        setTheme(theme === "dark" ? "light" : "dark")
+        setIsOpen(false)
+    }
 
     return (
         <div className="relative">
@@ -66,6 +76,17 @@ const UserMenu: React.FC = () => {
                                 <Settings className="h-4 w-4 mr-2 text-accent-secondary" />
                                 {t("nav.settings")}
                             </Link>
+                            <button
+                                onClick={toggleTheme}
+                                className="flex w-full items-center px-4 py-2 text-sm text-white/80 hover:bg-background-light hover:text-white transition-colors"
+                            >
+                                {theme === "dark" ? (
+                                    <Sun className="h-4 w-4 mr-2 text-accent-primary" />
+                                ) : (
+                                    <Moon className="h-4 w-4 mr-2 text-accent-secondary" />
+                                )}
+                                {theme === "dark" ? t("settings.appearance.light") : t("settings.appearance.dark")}
+                            </button>
                         </div>
                         <div className="py-1 border-t border-white/10">
                             <button

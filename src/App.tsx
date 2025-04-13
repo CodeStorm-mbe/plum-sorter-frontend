@@ -4,8 +4,11 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"
 import { AnimatePresence } from "framer-motion"
 import { AuthProvider } from "./contexts/AuthContext"
-// Importer le LanguageProvider
 import { LanguageProvider } from "./contexts/LanguageContext"
+import { ThemeProvider } from "./contexts/ThemeContext"
+import { NotificationProvider } from "./contexts/NotificationContext"
+import { PrivacyProvider } from "./contexts/PrivacyContext"
+import { SecurityProvider } from "./contexts/SecurityContext"
 
 // Import des pages
 import HomePage from "./pages/HomePage"
@@ -16,6 +19,7 @@ import LoginPage from "./pages/LoginPage"
 import RegisterPage from "./pages/RegisterPage"
 import ForgotPasswordPage from "./pages/ForgotPasswordPage"
 import ProfilePage from "./pages/ProfilePage"
+import SettingsPage from "./pages/SettingsPage"
 
 // Import des styles
 import "./styles/globals.css"
@@ -35,19 +39,27 @@ const AnimatedRoutes = () => {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/settings" element={<SettingsPage />} />
             </Routes>
         </AnimatePresence>
     )
 }
 
-// Mettre à jour la fonction App pour inclure le LanguageProvider
 function App() {
     return (
         <Router>
             <LanguageProvider>
-                <AuthProvider>
-                    <AnimatedRoutes />
-                </AuthProvider>
+                <ThemeProvider>
+                    <AuthProvider>
+                        <NotificationProvider>
+                            <PrivacyProvider>
+                                <SecurityProvider>
+                                    <AnimatedRoutes />
+                                </SecurityProvider>
+                            </PrivacyProvider>
+                        </NotificationProvider>
+                    </AuthProvider>
+                </ThemeProvider>
             </LanguageProvider>
         </Router>
     )
