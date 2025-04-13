@@ -5,6 +5,8 @@ WORKDIR /app
 # Copier les fichiers de configuration
 COPY package*.json ./
 COPY tsconfig.json ./
+COPY tsconfig.app.json ./
+COPY tsconfig.node.json ./
 COPY vite.config.ts ./
 COPY index.html ./
 
