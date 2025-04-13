@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import jwtDecode from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 import { User, AuthTokens, ApiError } from '@/types';
 import api from '@/services/api';
 

@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { 
   IconDashboard, 
-  IconFarm, 
+  IconHome2, 
   IconApple, 
   IconPackages, 
   IconChartBar, 
@@ -36,7 +36,7 @@ export function DashboardLayout() {
 
   const navItems = [
     { label: 'Tableau de bord', icon: <IconDashboard size={20} />, path: '/dashboard' },
-    { label: 'Fermes', icon: <IconFarm size={20} />, path: '/dashboard/farms' },
+    { label: 'Fermes', icon: <IconHome2 size={20} />, path: '/dashboard/farms' },
     { label: 'Classification', icon: <IconApple size={20} />, path: '/dashboard/classification' },
     { label: 'Lots', icon: <IconPackages size={20} />, path: '/dashboard/batches' },
     { label: 'Statistiques', icon: <IconChartBar size={20} />, path: '/dashboard/statistics' },

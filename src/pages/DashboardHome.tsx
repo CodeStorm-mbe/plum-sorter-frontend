@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Box, Container, Title, Text, Card, SimpleGrid, Group, ThemeIcon, useMantineTheme } from '@mantine/core';
-import { IconApple, IconFarm, IconPackages, IconChartBar } from '@tabler/icons-react';
+import { IconApple, IconHome2, IconPackages, IconChartBar } from '@tabler/icons-react';
 
 interface StatsCardProps {
   title: string;
@@ -49,7 +49,7 @@ export function DashboardHome() {
       title: 'Fermes',
       value: '8',
       description: '2 nouvelles fermes ce mois-ci',
-      icon: <IconFarm size={24} />,
+      icon: <IconHome2 size={24} />,
       color: theme.colors.green[6],
     },
     {

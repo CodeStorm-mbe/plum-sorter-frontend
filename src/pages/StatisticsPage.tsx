@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Container, Title, Text, Card, Group, Select, DateRangePicker, Grid, Loader, Center, Alert, Paper, RingProgress, Stack, SegmentedControl, Box } from '@mantine/core';
+import { Container, Title, Text, Card, Group, Select, Grid, Loader, Center, Alert, Paper, RingProgress, Stack, SegmentedControl, Box } from '@mantine/core';
+import { DatePickerInput } from '@mantine/dates';
 import { useQuery } from '@tanstack/react-query';
 import { IconAlertCircle, IconApple } from '@tabler/icons-react';
 import { BarChart, PieChart, LineChart } from '@mantine/charts';
@@ -170,12 +171,16 @@ export function StatisticsPage() {
             onChange={setSelectedFarm}
             clearable={false}
           />
-          <DateRangePicker
-            label="Période"
-            placeholder="Toute la période"
+          <DatePickerInput
+            type="range"
             value={dateRange}
             onChange={setDateRange}
+            label="Filtrer par date"
+            placeholder="Choisissez une période"
+            locale="fr"
+            mx="auto"
             clearable
+            maw={300}
           />
         </Group>
       </Card>
