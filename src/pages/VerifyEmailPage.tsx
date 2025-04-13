@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TextInput, Button, Box, Title, Text, Alert, Paper } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconAlertCircle, IconCheck } from '@tabler/icons-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { ApiError } from '@/types';
 
@@ -17,11 +17,12 @@ export function VerifyEmailPage() {
   const [resendSuccess, setResendSuccess] = useState<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { token } = useParams<{ token?: string }>(); // Extraire le token de l'URL
   const state = location.state as LocationState;
 
   const form = useForm({
     initialValues: {
-      token: '',
+      token: state?.token || '',
       email: state?.email || '',
     },
     validate: {
@@ -29,6 +30,13 @@ export function VerifyEmailPage() {
       email: (value) => (/^\S+@\S+\.\S+$/.test(value) ? null : 'Email invalide'),
     },
   });
+
+  // Vérifier le token automatiquement si présent dans l'URL
+  useEffect(() => {
+    if (token) {
+      handleVerify({ token });
+    }
+  }, [token]);
 
   const handleVerify = async (values: { token: string }) => {
     try {
@@ -52,7 +60,7 @@ export function VerifyEmailPage() {
       setResendSuccess(true);
     } catch (err) {
       const apiError = err as ApiError;
-      setError(apiError.message || 'Impossible d\'envoyer l\'email de vérification. Veuillez réessayer.');
+      setError(apiError.message || "Impossible d'envoyer l'email de vérification. Veuillez réessayer.");
     }
   };
 
@@ -74,27 +82,32 @@ export function VerifyEmailPage() {
         </Alert>
       )}
 
-      <Text mb={20}>
-        Un email de vérification a été envoyé à votre adresse email. Veuillez vérifier votre boîte de réception et entrer le token de vérification ci-dessous.
-      </Text>
+      {!token && (
+        <>
+          <Text mb={20}>
+            Un email de vérification a été envoyé à votre adresse email. Veuillez vérifier votre boîte de réception et
+            entrer le token de vérification ci-dessous.
+          </Text>
 
-      <Paper withBorder p="md" mb={30}>
-        <form onSubmit={form.onSubmit((values) => handleVerify({ token: values.token }))}>
-          <TextInput
-            label="Token de vérification"
-            placeholder="Entrez le token reçu par email"
-            required
-            {...form.getInputProps('token')}
-          />
+          <Paper withBorder p="md" mb={30}>
+            <form onSubmit={form.onSubmit((values) => handleVerify({ token: values.token }))}>
+              <TextInput
+                label="Token de vérification"
+                placeholder="Entrez le token reçu par email"
+                required
+                {...form.getInputProps('token')}
+              />
 
-          <Button fullWidth mt="md" type="submit" loading={isLoading}>
-            Vérifier mon email
-          </Button>
-        </form>
-      </Paper>
+              <Button fullWidth mt="md" type="submit" loading={isLoading}>
+                Vérifier mon email
+              </Button>
+            </form>
+          </Paper>
+        </>
+      )}
 
       <Title order={4} ta="center" mb={15}>
-        Vous n'avez pas reçu d'email?
+        Vous n'avez pas reçu d'email ?
       </Title>
 
       {resendSuccess && (
