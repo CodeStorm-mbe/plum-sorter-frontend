@@ -23,8 +23,8 @@ RUN npm run build
 # Étape de production avec Nginx
 FROM nginx:alpine
 
-# Copier la configuration Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copier nginx.conf comme template
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Copier les fichiers de build
 COPY --from=build /app/dist /usr/share/nginx/html
@@ -32,5 +32,5 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Exposer le port 80
 EXPOSE 80
 
-# Commande pour démarrer Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Substituer les variables d'environnement au démarrage
+CMD ["/bin/sh", "-c", "envsubst '${API_URL}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
