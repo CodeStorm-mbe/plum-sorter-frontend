@@ -128,6 +128,9 @@ export interface AuthTokens {
   username: string;
   email: string;
   role: string;
+  email_verified: boolean;
+  first_name: string;
+  last_name: string;
 }
 
 export interface ApiError {
