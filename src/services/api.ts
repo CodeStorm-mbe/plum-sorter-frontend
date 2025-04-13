@@ -3,7 +3,7 @@ import { AuthTokens, ApiError } from '@/types';
 
 // Créer une instance axios avec une configuration de base
 const api = axios.create({
-  baseURL: import.meta.env.API_URL || 'https://plum-api.onrender.com',
+  baseURL: import.meta.env.API_URL + 'api/' || 'https://plum-api.onrender.com/api/',
   headers: {
     'Content-Type': 'application/json',
   },
