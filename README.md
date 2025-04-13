@@ -43,7 +43,7 @@ Ce projet est le frontend pour le système de classification de prunes, conçu p
 
 3. Créez un fichier `.env` à la racine du projet avec les variables suivantes :
    ```
-   VITE_API_URL=http://localhost:8000
+   VITE_API_URL=plum-api.onrender.com
    ```
 
 4. Lancez le serveur de développement :
