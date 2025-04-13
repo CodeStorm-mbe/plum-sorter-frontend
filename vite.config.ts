@@ -24,7 +24,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'plum-api.onrender.com',
+        target: `${process.env.REACT_APP_API_URL}`,
         changeOrigin: true,
         secure: false,
       }
