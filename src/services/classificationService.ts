@@ -60,7 +60,8 @@ class ClassificationService {
   // Obtenir la liste des classifications
   static async getClassifications(): Promise<PlumClassification[]> {
     try {
-      return await ApiService.get<PlumClassification[]>('classifications/');
+      const response = await ApiService.get<PlumClassification[]>('classifications/');
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des classifications:', error);
       throw error;
@@ -70,7 +71,8 @@ class ClassificationService {
   // Obtenir une classification par ID
   static async getClassificationById(id: number): Promise<PlumClassification> {
     try {
-      return await ApiService.get<PlumClassification>(`classifications/${id}/`);
+      const response = await ApiService.get<PlumClassification>(`classifications/${id}/`);
+      return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération de la classification ${id}:`, error);
       throw error;
@@ -96,7 +98,12 @@ class ClassificationService {
         formData.append('geo_location', JSON.stringify(data.geo_location));
       }
       
-      return await ApiService.uploadFile<PlumClassification>('plum-classifier/classify/', formData);
+      const response = await ApiService.post<PlumClassification>('plum-classifier/classify/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la classification de l\'image:', error);
       throw error;
@@ -135,7 +142,12 @@ class ClassificationService {
         formData.append('geo_location', JSON.stringify(data.geo_location));
       }
       
-      return await ApiService.uploadFile<BatchClassificationResponse>('plum-classifier/classify-batch/', formData);
+      const response = await ApiService.post<BatchClassificationResponse>('plum-classifier/classify-batch/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la classification du lot d\'images:', error);
       throw error;

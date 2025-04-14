@@ -63,7 +63,8 @@ class FarmService {
   // Obtenir la liste des fermes
   static async getFarms(): Promise<Farm[]> {
     try {
-      return await ApiService.get<Farm[]>('farms/');
+      const response = await ApiService.get<Farm[]>('farms/');
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des fermes:', error);
       throw error;
@@ -73,7 +74,8 @@ class FarmService {
   // Obtenir une ferme par ID
   static async getFarmById(id: number): Promise<Farm> {
     try {
-      return await ApiService.get<Farm>(`farms/${id}/`);
+      const response = await ApiService.get<Farm>(`farms/${id}/`);
+      return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération de la ferme ${id}:`, error);
       throw error;
@@ -83,7 +85,8 @@ class FarmService {
   // Créer une nouvelle ferme
   static async createFarm(farmData: FarmCreateRequest): Promise<Farm> {
     try {
-      return await ApiService.post<Farm>('farms/', farmData);
+      const response = await ApiService.post<Farm>('farms/', farmData);
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la création de la ferme:', error);
       throw error;
@@ -93,7 +96,8 @@ class FarmService {
   // Mettre à jour une ferme
   static async updateFarm(id: number, farmData: FarmUpdateRequest): Promise<Farm> {
     try {
-      return await ApiService.patch<Farm>(`farms/${id}/`, farmData);
+      const response = await ApiService.patch<Farm>(`farms/${id}/`, farmData);
+      return response.data;
     } catch (error) {
       console.error(`Erreur lors de la mise à jour de la ferme ${id}:`, error);
       throw error;
@@ -113,7 +117,8 @@ class FarmService {
   // Obtenir les statistiques d'une ferme
   static async getFarmStats(id: number): Promise<FarmStats> {
     try {
-      return await ApiService.get<FarmStats>(`farms/${id}/stats/`);
+      const response = await ApiService.get<FarmStats>(`farms/${id}/stats/`);
+      return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération des statistiques de la ferme ${id}:`, error);
       throw error;
@@ -123,7 +128,8 @@ class FarmService {
   // Obtenir les lots d'une ferme
   static async getFarmBatches(id: number): Promise<any[]> {
     try {
-      return await ApiService.get<any[]>(`farms/${id}/batches/`);
+      const response = await ApiService.get<any[]>(`farms/${id}/batches/`);
+      return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération des lots de la ferme ${id}:`, error);
       throw error;
@@ -133,7 +139,8 @@ class FarmService {
   // Trouver des fermes à proximité
   static async getNearbyFarms(params: NearbyFarmsRequest): Promise<Farm[]> {
     try {
-      return await ApiService.get<Farm[]>('farms/nearby/', { params });
+      const response = await ApiService.get<Farm[]>('farms/nearby/', { params });
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la recherche de fermes à proximité:', error);
       throw error;

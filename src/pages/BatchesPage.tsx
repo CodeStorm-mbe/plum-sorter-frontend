@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Container, Title, Text, Card, Button, Group, TextInput, Modal, SimpleGrid, Badge, ActionIcon, Menu, Box, Loader, Center, Alert, Tabs, Table, Avatar, Progress, Select } from '@mantine/core';
+import { Container, Title, Text, Card, Button, Group, TextInput, Modal, SimpleGrid, Badge, ActionIcon, Menu, Box, Loader, Center, Alert, Tabs, Table, Avatar, Progress, Select, FileInput, Switch } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconEdit, IconTrash, IconDotsVertical, IconUpload, IconPackages, IconApple, IconChartPie } from '@tabler/icons-react';
+import { IconPlus, IconEdit, IconTrash, IconDotsVertical, IconUpload, IconPackages, IconApple, IconChartPie, IconPhoto } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Farm, PlumBatch, QualityDistribution } from '@/types';
-import api from '@/services/api';
+import { Farm, PlumBatch, QualityDistribution } from '../types';
+import api from '../services/api';
 
 // Service pour récupérer les fermes
 const fetchFarms = async (): Promise<Farm[]> => {
@@ -65,8 +65,8 @@ export function BatchesPage() {
       farm: '',
     },
     validate: {
-      name: (value) => (value.length < 3 ? 'Le nom doit contenir au moins 3 caractères' : null),
-      farm: (value) => (!value ? 'Veuillez sélectionner une ferme' : null),
+      name: (value: string) => (value.length < 3 ? 'Le nom doit contenir au moins 3 caractères' : null),
+      farm: (value: string) => (!value ? 'Veuillez sélectionner une ferme' : null),
     },
   });
 
@@ -422,7 +422,7 @@ export function BatchesPage() {
                       <Box w={200}>
                         {formatQualityDistribution(batch.quality_distribution).map((quality, index) => (
                           <Box key={index} mb={5}>
-                            <Group position="apart" mb={5}>
+                            <Group justify="apart" mb={5}>
                               <Text size="xs">{quality.label}</Text>
                               <Text size="xs" fw={500}>{quality.percentage.toFixed(1)}%</Text>
                             </Group>
@@ -481,7 +481,7 @@ export function BatchesPage() {
         <form onSubmit={form.onSubmit(handleCreateSubmit)}>
           <TextInput
             label="Nom du lot"
-            placeholder="Lot du 12 avril"
+            placeholder="Lot de prunes du 15/04/2025"
             required
             {...form.getInputProps('name')}
           />
@@ -520,7 +520,7 @@ export function BatchesPage() {
         <form onSubmit={form.onSubmit(handleEditSubmit)}>
           <TextInput
             label="Nom du lot"
-            placeholder="Lot du 12 avril"
+            placeholder="Lot de prunes du 15/04/2025"
             required
             {...form.getInputProps('name')}
           />
@@ -557,7 +557,7 @@ export function BatchesPage() {
         centered
       >
         <Text>
-          Êtes-vous sûr de vouloir supprimer le lot "{selectedBatch?.name}" ? Cette action est irréversible et supprimera également toutes les classifications associées.
+          Êtes-vous sûr de vouloir supprimer le lot "{selectedBatch?.name}" ? Cette action est irréversible.
         </Text>
         <Group justify="flex-end" mt="xl">
           <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
@@ -578,23 +578,25 @@ export function BatchesPage() {
         size="lg"
       >
         <form onSubmit={uploadForm.onSubmit(handleUploadSubmit)}>
-          <Box mb="md">
-            <Text mb="xs">Sélectionnez des images de prunes à classifier</Text>
-            <input
-              type="file"
-              multiple
-              accept="image/png,image/jpeg,image/jpg"
-              onChange={(e) => {
-                const files = Array.from(e.target.files || []);
-                setSelectedFiles(files);
-              }}
-            />
-            {selectedFiles.length > 0 && (
-              <Text size="sm" mt="xs">
-                {selectedFiles.length} image(s) sélectionnée(s)
-              </Text>
-            )}
-          </Box>
+          <FileInput
+            label="Images de prunes"
+            placeholder="Sélectionner des images"
+            accept="image/png,image/jpeg,image/jpg"
+            multiple
+            required
+            clearable
+            leftSection={<IconPhoto size={16} />}
+            value={selectedFiles}
+            onChange={setSelectedFiles as any}
+            mb="md"
+          />
+
+          <Switch
+            label="Utiliser TTA (Test Time Augmentation)"
+            description="Améliore la précision mais ralentit le traitement"
+            mb="xl"
+            {...uploadForm.getInputProps('use_tta', { type: 'checkbox' })}
+          />
 
           <Group justify="flex-end" mt="xl">
             <Button variant="outline" onClick={() => setUploadModalOpen(false)}>
@@ -602,10 +604,11 @@ export function BatchesPage() {
             </Button>
             <Button 
               type="submit" 
+              leftSection={<IconUpload size={16} />} 
               loading={classifyBatchMutation.isPending}
               disabled={selectedFiles.length === 0}
             >
-              Classifier {selectedFiles.length} image(s)
+              Classifier {selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''}
             </Button>
           </Group>
         </form>

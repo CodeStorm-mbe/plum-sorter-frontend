@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Container, Title, Text, Card, Group, Select, Grid, Loader, Center, Alert, Paper, RingProgress, Stack, SegmentedControl, Box } from '@mantine/core';
+import { useState, useEffect } from 'react';
+import { Container, Title, Text, Card, Button, Group, Select, Grid, Loader, Center, Alert, Paper, RingProgress, Stack, SegmentedControl, Box } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useQuery } from '@tanstack/react-query';
 import { IconAlertCircle, IconApple } from '@tabler/icons-react';
 import { BarChart, PieChart, LineChart } from '@mantine/charts';
 import { DateValue } from '@mantine/dates';
-import { Farm, StatisticsResponse, FarmStatistics } from '@/types';
-import api from '@/services/api';
+import { Farm, StatisticsResponse, FarmStatistics } from '../types';
+import api from '../services/api';
 
 // Service pour récupérer les fermes
 const fetchFarms = async (): Promise<Farm[]> => {
@@ -80,7 +80,7 @@ export function StatisticsPage() {
 
   // Formater les données pour les graphiques
   const formatQualityData = (stats: StatisticsResponse | FarmStatistics | undefined) => {
-    if (!stats) return [];
+    if (!stats || !stats.class_counts) return [];
     
     const qualityMapping: Record<string, { label: string; color: string }> = {
       'bonne_qualite': { label: 'Bonne qualité', color: '#4CAF50' },
@@ -93,14 +93,14 @@ export function StatisticsPage() {
     
     return Object.entries(stats.class_counts).map(([key, value]) => ({
       name: qualityMapping[key]?.label || key,
-      value,
-      color: qualityMapping[key]?.color,
+      value: typeof value === 'number' ? value : 0, // Assurer que value est un nombre
+      color: qualityMapping[key]?.color || '#CCCCCC',
     }));
   };
 
   // Données pour le graphique en anneau
   const ringData = (stats: StatisticsResponse | FarmStatistics | undefined) => {
-    if (!stats) return { value: 0, color: 'gray' };
+    if (!stats || !stats.class_percentages) return { value: 0, color: 'gray' };
     
     // Calculer le pourcentage de prunes de bonne qualité
     const goodQualityPercentage = stats.class_percentages['bonne_qualite'] || 0;
@@ -165,7 +165,7 @@ export function StatisticsPage() {
             placeholder="Toutes les fermes"
             data={[
               { value: '', label: 'Toutes les fermes' },
-              ...(farms?.map(farm => ({ value: farm.id.toString(), label: farm.name })) || [])
+              ...(farms?.map((farm: Farm) => ({ value: farm.id.toString(), label: farm.name })) || [])
             ]}
             value={selectedFarm}
             onChange={setSelectedFarm}
@@ -188,7 +188,7 @@ export function StatisticsPage() {
       <Grid gutter="md" mb="xl">
         <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
           <Card withBorder p="md" radius="md" shadow="sm" h="100%">
-            <Group position="apart" mb="xs">
+            <Group justify="space-between" mb="xs">
               <Text fw={500}>Classifications totales</Text>
             </Group>
             <Center my="md">
@@ -204,7 +204,7 @@ export function StatisticsPage() {
 
         <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
           <Card withBorder p="md" radius="md" shadow="sm" h="100%">
-            <Group position="apart" mb="xs">
+            <Group justify="space-between" mb="xs">
               <Text fw={500}>Confiance moyenne</Text>
             </Group>
             <Center my="md">
@@ -221,7 +221,7 @@ export function StatisticsPage() {
 
         <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
           <Card withBorder p="md" radius="md" shadow="sm" h="100%">
-            <Group position="apart" mb="xs">
+            <Group justify="space-between" mb="xs">
               <Text fw={500}>Prunes de bonne qualité</Text>
             </Group>
             <Center>
@@ -234,7 +234,7 @@ export function StatisticsPage() {
                   <Center>
                     <IconApple style={{ width: 20, height: 20 }} />
                     <Text size="xs" ta="center" fw={700}>
-                      {displayStats?.class_percentages['bonne_qualite'] 
+                      {displayStats?.class_percentages?.['bonne_qualite'] 
                         ? `${displayStats.class_percentages['bonne_qualite'].toFixed(1)}%` 
                         : '0%'}
                     </Text>
@@ -250,7 +250,7 @@ export function StatisticsPage() {
 
         <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
           <Card withBorder p="md" radius="md" shadow="sm" h="100%">
-            <Group position="apart" mb="xs">
+            <Group justify="space-between" mb="xs">
               <Text fw={500}>Fermes actives</Text>
             </Group>
             <Center my="md">
@@ -264,12 +264,12 @@ export function StatisticsPage() {
       </Grid>
 
       <Paper withBorder p="md" radius="md" shadow="sm" mb="xl">
-        <Stack spacing="xs" mb="md">
-          <Group position="apart">
+        <Stack gap="xs" mb="md">
+          <Group justify="space-between">
             <Title order={3}>Répartition de la qualité</Title>
             <SegmentedControl
               value={chartType}
-              onChange={(value) => setChartType(value as 'quality' | 'trend')}
+              onChange={(value: string) => setChartType(value as 'quality' | 'trend')}
               data={[
                 { label: 'Qualité', value: 'quality' },
                 { label: 'Tendance', value: 'trend' },
@@ -287,27 +287,39 @@ export function StatisticsPage() {
           <Grid>
             <Grid.Col span={{ base: 12, md: 6 }}>
               <Box h={300}>
-                <PieChart
-                  data={formatQualityData(displayStats)}
-                  withLabels
-                  labelsType="percent"
-                  withTooltip
-                  tooltipDataSource="segment"
-                  h={300}
-                />
+                {formatQualityData(displayStats).length > 0 ? (
+                  <PieChart
+                    data={formatQualityData(displayStats)}
+                    withLabels
+                    labelsType="percent"
+                    withTooltip
+                    tooltipDataSource="segment"
+                    h={300}
+                  />
+                ) : (
+                  <Center h={300}>
+                    <Text c="dimmed">Aucune donnée disponible</Text>
+                  </Center>
+                )}
               </Box>
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}>
               <Box h={300}>
-                <BarChart
-                  h={300}
-                  data={formatQualityData(displayStats)}
-                  dataKey="name"
-                  series={[{ name: 'value', color: 'plum.6' }]}
-                  tickLine="y"
-                  withLegend={false}
-                  withTooltip
-                />
+                {formatQualityData(displayStats).length > 0 ? (
+                  <BarChart
+                    h={300}
+                    data={formatQualityData(displayStats)}
+                    dataKey="name"
+                    series={[{ name: 'value', color: 'plum.6' }]}
+                    tickLine="y"
+                    withLegend={false}
+                    withTooltip
+                  />
+                ) : (
+                  <Center h={300}>
+                    <Text c="dimmed">Aucune donnée disponible</Text>
+                  </Center>
+                )}
               </Box>
             </Grid.Col>
           </Grid>
@@ -345,19 +357,31 @@ export function StatisticsPage() {
                 <Card withBorder p="md" radius="md" shadow="sm">
                   <Text fw={500} mb="md">{batch.batch_name}</Text>
                   <Box h={200}>
-                    <PieChart
-                      data={Object.entries(batch.quality_distribution).map(([key, value]) => ({
-                        name: key,
-                        value: value.count,
-                      }))}
-                      withLabels
-                      labelsPosition="outside"
-                      h={200}
-                      size={150}
-                    />
+                    {Object.keys(batch.quality_distribution || {}).length > 0 ? (
+                      <PieChart
+                        data={Object.entries(batch.quality_distribution || {}).map(([key, value]) => ({
+                          name: key,
+                          value: typeof value.count === 'number' ? value.count : 0,
+                          color: key === 'bonne_qualite' ? '#4CAF50' : 
+                                key === 'non_mure' ? '#FFC107' : 
+                                key === 'tachetee' ? '#FF9800' : 
+                                key === 'fissuree' ? '#F44336' : 
+                                key === 'meurtrie' ? '#E91E63' : 
+                                key === 'pourrie' ? '#9C27B0' : '#CCCCCC'
+                        }))}
+                        withLabels
+                        labelsPosition="outside"
+                        h={200}
+                        size={150}
+                      />
+                    ) : (
+                      <Center h={200}>
+                        <Text c="dimmed">Aucune donnée disponible</Text>
+                      </Center>
+                    )}
                   </Box>
                   <Text size="sm" ta="center" mt="sm">
-                    Total: {batch.total_classifications} prunes
+                    Total: {batch.total_classifications || 0} prunes
                   </Text>
                 </Card>
               </Grid.Col>

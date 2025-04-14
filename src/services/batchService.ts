@@ -40,7 +40,8 @@ class BatchService {
   // Obtenir la liste des lots
   static async getBatches(): Promise<PlumBatch[]> {
     try {
-      return await ApiService.get<PlumBatch[]>('batches/');
+      const response = await ApiService.get<PlumBatch[]>('batches/');
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des lots:', error);
       throw error;
@@ -50,7 +51,8 @@ class BatchService {
   // Obtenir un lot par ID
   static async getBatchById(id: number): Promise<PlumBatch> {
     try {
-      return await ApiService.get<PlumBatch>(`batches/${id}/`);
+      const response = await ApiService.get<PlumBatch>(`batches/${id}/`);
+      return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération du lot ${id}:`, error);
       throw error;
@@ -60,7 +62,8 @@ class BatchService {
   // Créer un nouveau lot
   static async createBatch(batchData: BatchCreateRequest): Promise<PlumBatch> {
     try {
-      return await ApiService.post<PlumBatch>('batches/', batchData);
+      const response = await ApiService.post<PlumBatch>('batches/', batchData);
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la création du lot:', error);
       throw error;
@@ -70,7 +73,8 @@ class BatchService {
   // Mettre à jour un lot
   static async updateBatch(id: number, batchData: BatchUpdateRequest): Promise<PlumBatch> {
     try {
-      return await ApiService.patch<PlumBatch>(`batches/${id}/`, batchData);
+      const response = await ApiService.patch<PlumBatch>(`batches/${id}/`, batchData);
+      return response.data;
     } catch (error) {
       console.error(`Erreur lors de la mise à jour du lot ${id}:`, error);
       throw error;
@@ -90,7 +94,8 @@ class BatchService {
   // Obtenir les classifications d'un lot
   static async getBatchClassifications(id: number): Promise<PlumClassification[]> {
     try {
-      return await ApiService.get<PlumClassification[]>(`batches/${id}/classifications/`);
+      const response = await ApiService.get<PlumClassification[]>(`batches/${id}/classifications/`);
+      return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération des classifications du lot ${id}:`, error);
       throw error;

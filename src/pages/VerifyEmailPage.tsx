@@ -3,12 +3,8 @@ import { TextInput, Button, Box, Title, Text, Alert, Paper } from '@mantine/core
 import { useForm } from '@mantine/form';
 import { IconAlertCircle, IconCheck } from '@tabler/icons-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { ApiError } from '@/types';
-
-interface LocationState {
-  email?: string;
-}
+import { useAuth } from '../contexts/AuthContext';
+import { ApiError, LocationState } from '../types';
 
 export function VerifyEmailPage() {
   const { verifyEmail, resendVerificationEmail, isLoading } = useAuth();
@@ -26,8 +22,8 @@ export function VerifyEmailPage() {
       email: state?.email || '',
     },
     validate: {
-      token: (value) => (value ? null : 'Le token est requis'),
-      email: (value) => (/^\S+@\S+\.\S+$/.test(value) ? null : 'Email invalide'),
+      token: (value: string) => (value ? null : 'Le token est requis'),
+      email: (value: string) => (/^\S+@\S+\.\S+$/.test(value) ? null : 'Email invalide'),
     },
   });
 

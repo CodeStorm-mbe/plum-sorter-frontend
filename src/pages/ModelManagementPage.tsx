@@ -1,7 +1,7 @@
 // ModelManagementPage.tsx - Page pour la gestion des versions de modèles (admin seulement)
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { RefreshCw, Check, AlertTriangle, Info, BarChart2, Upload } from "lucide-react";
+import { RefreshCw, Check, AlertTriangle } from "lucide-react";
 import Navbar from "../components/Navbar";
 import PageTransition from "../components/PageTransition";
 import { useAuth } from "../contexts/AuthContext";

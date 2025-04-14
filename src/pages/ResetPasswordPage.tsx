@@ -3,11 +3,14 @@ import { PasswordInput, Button, Box, Title, Text, Alert, Paper } from '@mantine/
 import { useForm } from '@mantine/form';
 import { IconAlertCircle, IconCheck } from '@tabler/icons-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { ApiError } from '@/types';
+import { useAuth } from '../contexts/AuthContext';
+
+interface ApiError {
+  message: string;
+}
 
 export function ResetPasswordPage() {
-  const { confirmResetPassword, isLoading } = useAuth();
+  const { isLoading, resetPassword } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -20,8 +23,8 @@ export function ResetPasswordPage() {
       confirm_password: '',
     },
     validate: {
-      password: (value) => (value.length < 8 ? 'Le mot de passe doit contenir au moins 8 caractères' : null),
-      confirm_password: (value, values) => (value !== values.password ? 'Les mots de passe ne correspondent pas' : null),
+      password: (value: string) => (value.length < 8 ? 'Le mot de passe doit contenir au moins 8 caractères' : null),
+      confirm_password: (value: string, values: {password: string}) => (value !== values.password ? 'Les mots de passe ne correspondent pas' : null),
     },
   });
 
@@ -34,7 +37,8 @@ export function ResetPasswordPage() {
     try {
       setError(null);
       setSuccess(false);
-      await confirmResetPassword(token, values.password);
+      // Passer le token et le nouveau mot de passe
+      await resetPassword(token, values.password);
       setSuccess(true);
       setTimeout(() => {
         navigate('/login', { state: { passwordReset: true } });

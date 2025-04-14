@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { Plus, Edit, Trash2, MapPin, Info, BarChart } from "lucide-react";
 import Navbar from "../components/Navbar";
 import PageTransition from "../components/PageTransition";
-import { useAuth } from "../contexts/AuthContext";
 import { FarmService, Farm } from "../services";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -17,7 +16,6 @@ import { toast } from "../hooks/use-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const FarmPage = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [farms, setFarms] = useState<Farm[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -433,19 +431,13 @@ const FarmPage = () => {
                 variant="destructive"
                 onClick={handleDelete}
                 disabled={isLoading}
+                className="bg-red-500 hover:bg-red-600"
               >
                 {isLoading ? <LoadingSpinner size="sm" /> : "Supprimer"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        {/* Footer */}
-        <footer className="py-8 px-4 md:px-8 lg:px-16 bg-background-light/50 backdrop-blur-md border-t border-white/5">
-          <div className="container mx-auto text-center">
-            <p className="text-white/60">© 2025 TriPrune - Projet JCIA Hackathon</p>
-          </div>
-        </footer>
       </div>
     </PageTransition>
   );

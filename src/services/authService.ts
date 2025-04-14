@@ -55,8 +55,8 @@ class AuthService {
       const tokenResponse = await ApiService.post<TokenResponse>('auth/token/', credentials);
       
       // Stocker les tokens
-      localStorage.setItem('auth_token', tokenResponse.access);
-      localStorage.setItem('refresh_token', tokenResponse.refresh);
+      localStorage.setItem('auth_token', tokenResponse.data.access);
+      localStorage.setItem('refresh_token', tokenResponse.data.refresh);
       
       // Obtenir les informations de l'utilisateur
       const user = await this.getCurrentUser();
@@ -105,10 +105,10 @@ class AuthService {
   // Obtenir l'utilisateur courant
   static async getCurrentUser(): Promise<User> {
     try {
-      const user = await ApiService.get<User>('users/me/');
+      const response = await ApiService.get<User>('users/me/');
       // Stocker l'utilisateur dans le localStorage pour un accès hors ligne
-      localStorage.setItem('user', JSON.stringify(user));
-      return user;
+      localStorage.setItem('user', JSON.stringify(response.data));
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération de l\'utilisateur:', error);
       throw error;

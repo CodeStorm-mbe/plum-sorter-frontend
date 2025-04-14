@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Container, Title, Text, Card, Button, Group, TextInput, Modal, SimpleGrid, Badge, ActionIcon, Menu, Box, Loader, Center, Alert } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { notifications } from '@mantine/notifications';
 import { IconPlus, IconEdit, IconTrash, IconDotsVertical, IconMapPin, IconRuler, IconUser, IconAlertCircle } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Farm } from '@/types';
-import api from '@/services/api';
+import { Farm } from '../types';
+import api from '../services/api';
+import { notifications } from '../utils/notifications';
 
 // Service pour récupérer les fermes
 const fetchFarms = async (): Promise<Farm[]> => {
@@ -48,9 +48,9 @@ export function FarmsPage() {
       longitude: undefined as number | undefined,
     },
     validate: {
-      name: (value) => (value.length < 3 ? 'Le nom doit contenir au moins 3 caractères' : null),
-      location: (value) => (value.length < 3 ? 'La localisation doit contenir au moins 3 caractères' : null),
-      size: (value) => (value <= 0 ? 'La taille doit être supérieure à 0' : null),
+      name: (value: string) => (value.length < 3 ? 'Le nom doit contenir au moins 3 caractères' : null),
+      location: (value: string) => (value.length < 3 ? 'La localisation doit contenir au moins 3 caractères' : null),
+      size: (value: number) => (value <= 0 ? 'La taille doit être supérieure à 0' : null),
     },
   });
 
@@ -128,7 +128,7 @@ export function FarmsPage() {
   });
 
   // Mettre à jour le formulaire lorsqu'une ferme est sélectionnée pour l'édition
-  useEffect(() => {
+  useState(() => {
     if (selectedFarm && editModalOpen) {
       form.setValues({
         name: selectedFarm.name,
@@ -139,7 +139,7 @@ export function FarmsPage() {
         longitude: selectedFarm.longitude,
       });
     }
-  }, [selectedFarm, editModalOpen]);
+  });
 
   // Gérer la soumission du formulaire de création
   const handleCreateSubmit = (values: typeof form.values) => {

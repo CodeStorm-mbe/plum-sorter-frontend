@@ -1,150 +1,161 @@
-"use client"
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { Notification } from '../types';
+import { notifications } from '../utils/notifications';
 
-import React, { createContext, useContext, useState, useEffect } from "react"
-import { NotificationService, Notification as ApiNotification } from "../services"
-
-// Types pour les notifications
-export interface Notification {
-    id: number
-    title: string
-    message: string
-    type: string
-    isRead: boolean
-    createdAt: string
+interface NotificationContextProps {
+  notifications: Notification[];
+  addNotification: (notification: Notification) => void;
+  removeNotification: (id: string) => void;
+  markAsRead: (id: string) => void;
+  markAllAsRead: () => void;
+  notificationOptions?: any[];
+  toggleNotificationOption?: (id: string) => void;
+  saveNotificationPreferences?: () => Promise<boolean | void>;
 }
 
-interface NotificationContextType {
-    notifications: Notification[]
-    unreadCount: number
-    isLoading: boolean
-    error: string | null
-    fetchNotifications: () => Promise<void>
-    markAsRead: (id: number) => Promise<void>
-    markAllAsRead: () => Promise<void>
-    deleteNotification: (id: number) => Promise<void>
-    clearError: () => void
-}
+const NotificationContext = createContext<NotificationContextProps>({
+  notifications: [],
+  addNotification: () => {},
+  removeNotification: () => {},
+  markAsRead: () => {},
+  markAllAsRead: () => {},
+  notificationOptions: [],
+  toggleNotificationOption: () => {},
+  saveNotificationPreferences: async () => {},
+});
 
-// Création du contexte
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
+export const useNotifications = () => useContext(NotificationContext);
 
-// Hook personnalisé pour utiliser le contexte de notification
-export const useNotification = () => {
-    const context = useContext(NotificationContext)
-    if (context === undefined) {
-        throw new Error("useNotification doit être utilisé à l'intérieur d'un NotificationProvider")
+export const NotificationProvider = ({ children }: { children: ReactNode }) => {
+  const [notificationList, setNotificationList] = useState<Notification[]>([]);
+  const [notificationOptions, setNotificationOptions] = useState<any[]>([
+    { id: 'email_updates', enabled: true },
+    { id: 'app_notifications', enabled: true },
+    { id: 'analysis_complete', enabled: true },
+    { id: 'new_features', enabled: false }
+  ]);
+
+  // Charger les notifications depuis le localStorage au démarrage
+  useEffect(() => {
+    const storedNotifications = localStorage.getItem('notifications');
+    if (storedNotifications) {
+      try {
+        const parsedNotifications = JSON.parse(storedNotifications);
+        setNotificationList(parsedNotifications);
+      } catch (error) {
+        console.error('Erreur lors du chargement des notifications:', error);
+      }
     }
-    return context
-}
-
-// Convertir les notifications de l'API en format frontend
-const convertApiNotification = (apiNotification: ApiNotification): Notification => ({
-    id: apiNotification.id,
-    title: apiNotification.title,
-    message: apiNotification.message,
-    type: apiNotification.type,
-    isRead: apiNotification.is_read,
-    createdAt: apiNotification.created_at
-})
-
-// Provider du contexte de notification
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [notifications, setNotifications] = useState<Notification[]>([])
-    const [isLoading, setIsLoading] = useState<boolean>(false)
-    const [error, setError] = useState<string | null>(null)
-
-    // Calculer le nombre de notifications non lues
-    const unreadCount = notifications.filter(notification => !notification.isRead).length
-
-    // Récupérer les notifications au chargement
-    useEffect(() => {
-        fetchNotifications()
-    }, [])
-
-    // Fonction pour récupérer les notifications
-    const fetchNotifications = async () => {
-        try {
-            setIsLoading(true)
-            setError(null)
-            const apiNotifications = await NotificationService.getNotifications()
-            setNotifications(apiNotifications.map(convertApiNotification))
-        } catch (err) {
-            console.error("Erreur lors de la récupération des notifications:", err)
-            setError(err instanceof Error ? err.message : "Une erreur est survenue lors de la récupération des notifications")
-        } finally {
-            setIsLoading(false)
-        }
+    
+    // Charger les préférences de notification
+    const storedOptions = localStorage.getItem('notification_options');
+    if (storedOptions) {
+      try {
+        const parsedOptions = JSON.parse(storedOptions);
+        setNotificationOptions(parsedOptions);
+      } catch (error) {
+        console.error('Erreur lors du chargement des préférences de notification:', error);
+      }
     }
+  }, []);
 
-    // Fonction pour marquer une notification comme lue
-    const markAsRead = async (id: number) => {
-        try {
-            setIsLoading(true)
-            setError(null)
-            await NotificationService.markAsRead(id)
-            setNotifications(prevNotifications =>
-                prevNotifications.map(notification =>
-                    notification.id === id
-                        ? { ...notification, isRead: true }
-                        : notification
-                )
-            )
-        } catch (err) {
-            console.error(`Erreur lors du marquage de la notification ${id} comme lue:`, err)
-            setError(err instanceof Error ? err.message : "Une erreur est survenue lors du marquage de la notification comme lue")
-        } finally {
-            setIsLoading(false)
-        }
+  // Sauvegarder les notifications dans le localStorage à chaque changement
+  useEffect(() => {
+    localStorage.setItem('notifications', JSON.stringify(notificationList));
+  }, [notificationList]);
+  
+  // Sauvegarder les préférences de notification dans le localStorage à chaque changement
+  useEffect(() => {
+    localStorage.setItem('notification_options', JSON.stringify(notificationOptions));
+  }, [notificationOptions]);
+  
+  // Basculer l'état d'une option de notification
+  const toggleNotificationOption = (id: string) => {
+    setNotificationOptions(prev => 
+      prev.map(option => 
+        option.id === id 
+          ? { ...option, enabled: !option.enabled } 
+          : option
+      )
+    );
+  };
+  
+  // Sauvegarder les préférences de notification
+  const saveNotificationPreferences = async () => {
+    try {
+      // Simuler un appel API pour sauvegarder les préférences
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Dans une implémentation réelle, on ferait un appel API ici
+      // await api.post('/users/notification-preferences/', { options: notificationOptions });
+      
+      return true;
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde des préférences de notification:', error);
+      throw error;
     }
+  };
 
-    // Fonction pour marquer toutes les notifications comme lues
-    const markAllAsRead = async () => {
-        try {
-            setIsLoading(true)
-            setError(null)
-            await NotificationService.markAllAsRead()
-            setNotifications(prevNotifications =>
-                prevNotifications.map(notification => ({ ...notification, isRead: true }))
-            )
-        } catch (err) {
-            console.error("Erreur lors du marquage de toutes les notifications comme lues:", err)
-            setError(err instanceof Error ? err.message : "Une erreur est survenue lors du marquage de toutes les notifications comme lues")
-        } finally {
-            setIsLoading(false)
-        }
-    }
+  // Ajouter une notification
+  const addNotification = (notification: Notification) => {
+    const newNotification = {
+      ...notification,
+      id: notification.id || Date.now().toString(),
+      read: false,
+      createdAt: notification.createdAt || new Date(),
+    };
+    
+    setNotificationList(prev => [newNotification, ...prev]);
+    
+    // Afficher une notification visuelle
+    notifications.show({
+      title: notification.title,
+      message: notification.message,
+      color: notification.type === 'error' ? 'red' : 
+             notification.type === 'warning' ? 'yellow' : 
+             notification.type === 'success' ? 'green' : 'blue',
+    });
+  };
 
-    // Fonction pour supprimer une notification
-    const deleteNotification = async (id: number) => {
-        try {
-            setIsLoading(true)
-            setError(null)
-            await NotificationService.deleteNotification(id)
-            setNotifications(prevNotifications =>
-                prevNotifications.filter(notification => notification.id !== id)
-            )
-        } catch (err) {
-            console.error(`Erreur lors de la suppression de la notification ${id}:`, err)
-            setError(err instanceof Error ? err.message : "Une erreur est survenue lors de la suppression de la notification")
-        } finally {
-            setIsLoading(false)
-        }
-    }
+  // Supprimer une notification
+  const removeNotification = (id: string) => {
+    setNotificationList(prev => prev.filter(notification => notification.id !== id));
+  };
 
-    // Fonction pour effacer les erreurs
-    const clearError = () => setError(null)
+  // Marquer une notification comme lue
+  const markAsRead = (id: string) => {
+    setNotificationList(prev => 
+      prev.map(notification => 
+        notification.id === id 
+          ? { ...notification, read: true } 
+          : notification
+      )
+    );
+  };
 
-    const value = {
-        notifications,
-        unreadCount,
-        isLoading,
-        error,
-        fetchNotifications,
+  // Marquer toutes les notifications comme lues
+  const markAllAsRead = () => {
+    setNotificationList(prev => 
+      prev.map(notification => ({ ...notification, read: true }))
+    );
+  };
+
+  return (
+    <NotificationContext.Provider
+      value={{
+        notifications: notificationList,
+        addNotification,
+        removeNotification,
         markAsRead,
         markAllAsRead,
-        deleteNotification,
-        clearError
-    }
+        notificationOptions,
+        toggleNotificationOption,
+        saveNotificationPreferences,
+      }}
+    >
+      {children}
+    </NotificationContext.Provider>
+  );
+};
 
-    return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>
-}
+export default NotificationContext;

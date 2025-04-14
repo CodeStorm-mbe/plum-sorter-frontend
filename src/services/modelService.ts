@@ -48,7 +48,8 @@ class ModelService {
   // Obtenir la liste des versions de modèles (admin seulement)
   static async getModels(): Promise<ModelVersion[]> {
     try {
-      return await ApiService.get<ModelVersion[]>('models/');
+      const response = await ApiService.get<ModelVersion[]>('models/');
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des modèles:', error);
       throw error;
@@ -58,7 +59,8 @@ class ModelService {
   // Obtenir un modèle par ID (admin seulement)
   static async getModelById(id: number): Promise<ModelVersion> {
     try {
-      return await ApiService.get<ModelVersion>(`models/${id}/`);
+      const response = await ApiService.get<ModelVersion>(`models/${id}/`);
+      return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération du modèle ${id}:`, error);
       throw error;
@@ -68,7 +70,8 @@ class ModelService {
   // Obtenir le modèle actif
   static async getActiveModel(): Promise<ModelVersion> {
     try {
-      return await ApiService.get<ModelVersion>('models/active/');
+      const response = await ApiService.get<ModelVersion>('models/active/');
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération du modèle actif:', error);
       throw error;
@@ -78,7 +81,8 @@ class ModelService {
   // Activer un modèle (admin seulement)
   static async activateModel(id: number): Promise<any> {
     try {
-      return await ApiService.post<any>(`models/${id}/activate/`);
+      const response = await ApiService.post<any>(`models/${id}/activate/`);
+      return response.data;
     } catch (error) {
       console.error(`Erreur lors de l'activation du modèle ${id}:`, error);
       throw error;
@@ -88,7 +92,8 @@ class ModelService {
   // Recharger le modèle actif (admin seulement)
   static async reloadModel(): Promise<any> {
     try {
-      return await ApiService.post<any>('models/reload/');
+      const response = await ApiService.post<any>('models/reload/');
+      return response.data;
     } catch (error) {
       console.error('Erreur lors du rechargement du modèle:', error);
       throw error;
@@ -98,7 +103,8 @@ class ModelService {
   // Obtenir les informations sur le modèle chargé
   static async getModelInfo(): Promise<ModelInfo> {
     try {
-      return await ApiService.get<ModelInfo>('models/info/');
+      const response = await ApiService.get<ModelInfo>('models/info/');
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des informations du modèle:', error);
       throw error;

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { AppShell, Burger, Group, NavLink, Avatar, Text, UnstyledButton, Menu, rem, Divider, Title, useMantineColorScheme, ActionIcon, Box } from '@mantine/core';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { 
   IconDashboard, 
   IconHome2, 
@@ -20,7 +20,7 @@ import {
 export function DashboardLayout() {
   const [opened, setOpened] = useState(false);
   const { user, logout } = useAuth();
-  const { colorScheme, toggleColorScheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const { setColorScheme } = useMantineColorScheme();
@@ -30,8 +30,8 @@ export function DashboardLayout() {
   };
 
   const handleToggleTheme = () => {
-    toggleColorScheme();
-    setColorScheme(colorScheme === 'dark' ? 'light' : 'dark');
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+    setColorScheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   const navItems = [
@@ -66,7 +66,7 @@ export function DashboardLayout() {
               onClick={handleToggleTheme} 
               aria-label="Changer de thème"
             >
-              {colorScheme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
+              {theme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
             </ActionIcon>
             <ActionIcon variant="default" aria-label="Notifications">
               <IconBell size={18} />

@@ -27,7 +27,8 @@ class NotificationService {
   // Obtenir la liste des notifications de l'utilisateur
   static async getNotifications(): Promise<Notification[]> {
     try {
-      return await ApiService.get<Notification[]>('plum-classifier/notifications/');
+      const response = await ApiService.get<Notification[]>('plum-classifier/notifications/');
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des notifications:', error);
       throw error;
@@ -37,7 +38,8 @@ class NotificationService {
   // Obtenir une notification par ID
   static async getNotificationById(id: number): Promise<Notification> {
     try {
-      return await ApiService.get<Notification>(`plum-classifier/notifications/${id}/`);
+      const response = await ApiService.get<Notification>(`plum-classifier/notifications/${id}/`);
+      return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération de la notification ${id}:`, error);
       throw error;
@@ -47,9 +49,10 @@ class NotificationService {
   // Marquer une notification comme lue
   static async markAsRead(id: number): Promise<Notification> {
     try {
-      return await ApiService.patch<Notification>(`plum-classifier/notifications/${id}/`, {
+      const response = await ApiService.patch<Notification>(`plum-classifier/notifications/${id}/`, {
         is_read: true
       });
+      return response.data;
     } catch (error) {
       console.error(`Erreur lors du marquage de la notification ${id} comme lue:`, error);
       throw error;
@@ -69,7 +72,8 @@ class NotificationService {
   // Créer une notification (admin seulement)
   static async createNotification(data: NotificationCreateRequest): Promise<Notification> {
     try {
-      return await ApiService.post<Notification>('plum-classifier/notifications/', data);
+      const response = await ApiService.post<Notification>('plum-classifier/notifications/', data);
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la création de la notification:', error);
       throw error;

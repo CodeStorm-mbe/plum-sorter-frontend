@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Container, Title, Text, Card, Button, Group, FileInput, Select, NumberInput, Switch, Loader, Center, Alert, Image, Stack, Paper, Badge, Grid } from '@mantine/core';
+import { Container, Title, Text, Card, Button, Group, FileInput, Select, Switch, Loader, Center, Alert, Image, Stack, Paper, Badge, Grid } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { notifications } from '@mantine/notifications';
 import { IconUpload, IconPhoto, IconAlertCircle, IconCheck } from '@tabler/icons-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Farm, PlumClassification } from '@/types';
-import api from '@/services/api';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { Farm, PlumClassification } from '../types';
+import api from '../services/api';
+import { notifications } from '../utils/notifications';
 
 // Service pour récupérer les fermes
 const fetchFarms = async (): Promise<Farm[]> => {
@@ -27,7 +27,6 @@ export function ClassificationPage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [classificationResult, setClassificationResult] = useState<PlumClassification | null>(null);
-  const queryClient = useQueryClient();
 
   // Formulaire pour la classification
   const form = useForm({
@@ -37,7 +36,7 @@ export function ClassificationPage() {
       use_tta: false,
     },
     validate: {
-      farm_id: (value) => (!value ? 'Veuillez sélectionner une ferme' : null),
+      farm_id: (value: string) => (!value ? 'Veuillez sélectionner une ferme' : null),
     },
   });
 
@@ -266,7 +265,7 @@ export function ClassificationPage() {
               </Stack>
             ) : (
               <Center style={{ height: '300px' }}>
-                <Stack align="center" spacing="xs">
+                <Stack align="center" gap="xs">
                   <IconPhoto size={48} opacity={0.3} />
                   <Text c="dimmed">Sélectionnez une image pour voir l'aperçu</Text>
                 </Stack>

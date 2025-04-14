@@ -99,7 +99,7 @@ const UserProfileForm: React.FC = () => {
                                 <div className="space-y-2 text-sm">
                                     <p className="text-white/60">
                                         <span className="text-white/80">Membre depuis:</span>{" "}
-                                        {new Date(user.createdAt).toLocaleDateString()}
+                                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : new Date(user.date_joined).toLocaleDateString()}
                                     </p>
                                     <p className="text-white/60">
                                         <span className="text-white/80">Dernière connexion:</span> Aujourd'hui
