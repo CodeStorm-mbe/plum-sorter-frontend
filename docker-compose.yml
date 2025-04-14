@@ -8,5 +8,5 @@ services:
     ports:
       - "8080:80"
     environment:
-      - VITE_API_URL=http://localhost:8000/api/
+      - VITE_API_URL=https://plum-api.onrender.com/api/
     restart: unless-stopped
