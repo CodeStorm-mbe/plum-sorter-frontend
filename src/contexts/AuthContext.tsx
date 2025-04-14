@@ -3,15 +3,17 @@
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { AuthService } from "../services"
 
 // Types pour les utilisateurs et l'authentification
 export interface User {
-    id: string
+    id: number
     email: string
     name: string
     role: "user" | "admin"
     avatar?: string
-    createdAt: string
+    is_verified: boolean
+    created_at: string
 }
 
 interface AuthContextType {
@@ -24,6 +26,11 @@ interface AuthContextType {
     updateProfile: (userData: Partial<User>) => Promise<void>
     error: string | null
     clearError: () => void
+    verifyEmail: (token: string) => Promise<void>
+    resendVerificationEmail: (email: string) => Promise<void>
+    requestPasswordReset: (email: string) => Promise<void>
+    confirmPasswordReset: (token: string, password: string) => Promise<void>
+    changePassword: (oldPassword: string, newPassword: string) => Promise<void>
 }
 
 // Création du contexte
@@ -38,89 +45,6 @@ export const useAuth = () => {
     return context
 }
 
-// Simulation d'une API d'authentification
-const authAPI = {
-    login: async (email: string, password: string): Promise<User> => {
-        // Simuler un délai réseau
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        // Vérifier les identifiants (simulation)
-        if (email === "demo@triprune.com" && password === "password") {
-            return {
-                id: "user-1",
-                email: "demo@triprune.com",
-                name: "Utilisateur Démo",
-                role: "user",
-                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=demo",
-                createdAt: new Date().toISOString(),
-            }
-        }
-
-        // Vérifier si l'utilisateur existe dans le localStorage
-        const users = JSON.parse(localStorage.getItem("triprune_users") || "[]")
-        const user = users.find((u: any) => u.email === email)
-
-        if (user && user.password === password) {
-            // Ne pas renvoyer le mot de passe
-            const { password, ...userWithoutPassword } = user
-            return userWithoutPassword
-        }
-
-        throw new Error("Identifiants invalides")
-    },
-
-    register: async (name: string, email: string, password: string): Promise<User> => {
-        // Simuler un délai réseau
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        // Vérifier si l'email est déjà utilisé
-        const users = JSON.parse(localStorage.getItem("triprune_users") || "[]")
-        if (users.some((u: any) => u.email === email)) {
-            throw new Error("Cet email est déjà utilisé")
-        }
-
-        // Créer un nouvel utilisateur
-        const newUser = {
-            id: `user-${Date.now()}`,
-            email,
-            name,
-            password, // Dans une vraie application, le mot de passe serait haché
-            role: "user" as const,
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-            createdAt: new Date().toISOString(),
-        }
-
-        // Sauvegarder l'utilisateur
-        users.push(newUser)
-        localStorage.setItem("triprune_users", JSON.stringify(users))
-
-        // Ne pas renvoyer le mot de passe
-        const { password: _, ...userWithoutPassword } = newUser
-        return userWithoutPassword
-    },
-
-    updateProfile: async (userId: string, userData: Partial<User>): Promise<User> => {
-        // Simuler un délai réseau
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        // Mettre à jour l'utilisateur dans le localStorage
-        const users = JSON.parse(localStorage.getItem("triprune_users") || "[]")
-        const userIndex = users.findIndex((u: any) => u.id === userId)
-
-        if (userIndex === -1) {
-            throw new Error("Utilisateur non trouvé")
-        }
-
-        // Mettre à jour les données de l'utilisateur
-        users[userIndex] = { ...users[userIndex], ...userData }
-        localStorage.setItem("triprune_users", JSON.stringify(users))
-
-        // Ne pas renvoyer le mot de passe
-        const { password, ...userWithoutPassword } = users[userIndex]
-        return userWithoutPassword
-    },
-}
-
 // Provider du contexte d'authentification
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null)
@@ -130,11 +54,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Vérifier si l'utilisateur est déjà connecté au chargement
     useEffect(() => {
-        const storedUser = localStorage.getItem("triprune_current_user")
-        if (storedUser) {
-            setUser(JSON.parse(storedUser))
-        }
-        setIsLoading(false)
+        const checkAuth = async () => {
+            try {
+                if (AuthService.isAuthenticated()) {
+                    const userData = await AuthService.getCurrentUser();
+                    setUser(userData);
+                }
+            } catch (err) {
+                console.error("Erreur lors de la vérification de l'authentification:", err);
+                // En cas d'erreur, déconnecter l'utilisateur
+                AuthService.logout();
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        
+        checkAuth();
     }, [])
 
     // Fonction de connexion
@@ -142,9 +77,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             setIsLoading(true)
             setError(null)
-            const userData = await authAPI.login(email, password)
+            const userData = await AuthService.login({ email, password })
             setUser(userData)
-            localStorage.setItem("triprune_current_user", JSON.stringify(userData))
             navigate("/dashboard")
         } catch (err) {
             setError(err instanceof Error ? err.message : "Une erreur est survenue lors de la connexion")
@@ -158,9 +92,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             setIsLoading(true)
             setError(null)
-            const userData = await authAPI.register(name, email, password)
+            const userData = await AuthService.register({ name, email, password })
             setUser(userData)
-            localStorage.setItem("triprune_current_user", JSON.stringify(userData))
             navigate("/dashboard")
         } catch (err) {
             setError(err instanceof Error ? err.message : "Une erreur est survenue lors de l'inscription")
@@ -170,10 +103,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Fonction de déconnexion
-    const logout = () => {
-        setUser(null)
-        localStorage.removeItem("triprune_current_user")
-        navigate("/")
+    const logout = async () => {
+        try {
+            setIsLoading(true)
+            await AuthService.logout()
+            setUser(null)
+            navigate("/")
+        } catch (err) {
+            console.error("Erreur lors de la déconnexion:", err)
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     // Fonction de mise à jour du profil
@@ -183,11 +123,80 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             setIsLoading(true)
             setError(null)
-            const updatedUser = await authAPI.updateProfile(user.id, userData)
+            const updatedUser = await AuthService.updateProfile(userData)
             setUser(updatedUser)
-            localStorage.setItem("triprune_current_user", JSON.stringify(updatedUser))
         } catch (err) {
             setError(err instanceof Error ? err.message : "Une erreur est survenue lors de la mise à jour du profil")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    // Fonction pour vérifier l'email
+    const verifyEmail = async (token: string) => {
+        try {
+            setIsLoading(true)
+            setError(null)
+            await AuthService.verifyEmail(token)
+            // Mettre à jour l'utilisateur après vérification
+            if (user) {
+                const updatedUser = await AuthService.getCurrentUser()
+                setUser(updatedUser)
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Une erreur est survenue lors de la vérification de l'email")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    // Fonction pour renvoyer l'email de vérification
+    const resendVerificationEmail = async (email: string) => {
+        try {
+            setIsLoading(true)
+            setError(null)
+            await AuthService.resendVerificationEmail(email)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Une erreur est survenue lors du renvoi de l'email de vérification")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    // Fonction pour demander une réinitialisation de mot de passe
+    const requestPasswordReset = async (email: string) => {
+        try {
+            setIsLoading(true)
+            setError(null)
+            await AuthService.requestPasswordReset(email)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Une erreur est survenue lors de la demande de réinitialisation de mot de passe")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    // Fonction pour confirmer la réinitialisation de mot de passe
+    const confirmPasswordReset = async (token: string, password: string) => {
+        try {
+            setIsLoading(true)
+            setError(null)
+            await AuthService.confirmPasswordReset({ token, password })
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Une erreur est survenue lors de la confirmation de réinitialisation de mot de passe")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    // Fonction pour changer le mot de passe
+    const changePassword = async (oldPassword: string, newPassword: string) => {
+        try {
+            setIsLoading(true)
+            setError(null)
+            await AuthService.changePassword({ old_password: oldPassword, new_password: newPassword })
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Une erreur est survenue lors du changement de mot de passe")
         } finally {
             setIsLoading(false)
         }
@@ -206,6 +215,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateProfile,
         error,
         clearError,
+        verifyEmail,
+        resendVerificationEmail,
+        requestPasswordReset,
+        confirmPasswordReset,
+        changePassword
     }
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -1,0 +1,42 @@
+# .dockerignore - Fichiers à ignorer lors de la construction de l'image Docker
+
+# Dépendances
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Fichiers de build
+dist
+build
+.cache
+
+# Fichiers d'environnement local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers de développement
+.git
+.github
+.gitignore
+.vscode
+.idea
+*.md
+!README.md
+
+# Fichiers de test
+coverage
+__tests__
+*.test.js
+*.spec.js
+
+# Autres
+.editorconfig
+.prettierrc
+.eslintrc

@@ -1,5 +1,5 @@
+// Mise à jour du fichier App.tsx pour inclure les nouvelles pages
 "use client"
-
 // App.tsx
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"
 import { AnimatePresence } from "framer-motion"
@@ -9,7 +9,6 @@ import { ThemeProvider } from "./contexts/ThemeContext"
 import { NotificationProvider } from "./contexts/NotificationContext"
 import { PrivacyProvider } from "./contexts/PrivacyContext"
 import { SecurityProvider } from "./contexts/SecurityContext"
-
 // Import des pages
 import HomePage from "./pages/HomePage"
 import PredictionPage from "./pages/PredictionPage"
@@ -20,26 +19,62 @@ import RegisterPage from "./pages/RegisterPage"
 import ForgotPasswordPage from "./pages/ForgotPasswordPage"
 import ProfilePage from "./pages/ProfilePage"
 import SettingsPage from "./pages/SettingsPage"
-
+import FarmPage from "./pages/FarmPage"
+import BatchPage from "./pages/BatchPage"
+import BatchClassificationPage from "./pages/BatchClassificationPage"
+import ModelManagementPage from "./pages/ModelManagementPage"
+// Import des composants d'authentification
+import ProtectedRoute from "./components/auth/ProtectedRoute"
 // Import des styles
 import "./styles/globals.css"
 
 // Wrapper pour AnimatePresence
 const AnimatedRoutes = () => {
     const location = useLocation()
-
     return (
         <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/prediction" element={<PredictionPage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/dashboard" element={
+                    <ProtectedRoute>
+                        <DashboardPage />
+                    </ProtectedRoute>
+                } />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/profile" element={
+                    <ProtectedRoute>
+                        <ProfilePage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/settings" element={
+                    <ProtectedRoute>
+                        <SettingsPage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/farms" element={
+                    <ProtectedRoute>
+                        <FarmPage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/batches" element={
+                    <ProtectedRoute>
+                        <BatchPage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/batches/:batchId/add-images" element={
+                    <ProtectedRoute>
+                        <BatchClassificationPage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/models" element={
+                    <ProtectedRoute adminOnly={true}>
+                        <ModelManagementPage />
+                    </ProtectedRoute>
+                } />
             </Routes>
         </AnimatePresence>
     )
