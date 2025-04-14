@@ -1,47 +1,12 @@
-<<<<<<< HEAD
 version: '3'
 
 services:
   plum-frontend:
-=======
-version: '3.8'
-
-services:
-  frontend:
->>>>>>> 52b038ca4bba93cc54a40159cc8eb8c0fdc11314
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-<<<<<<< HEAD
       - "8080:80"
     environment:
       - VITE_API_URL=http://localhost:8000/api/
     restart: unless-stopped
-=======
-      - "80:80"
-    environment:
-      - API_URL=http://backend:8000
-    depends_on:
-      - backend
-    networks:
-      - plum-network
-
-  backend:
-    image: plum-classification-api:latest
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./models:/app/models
-      - ./media:/app/media
-    environment:
-      - DEBUG=False
-      - ALLOWED_HOSTS=localhost,backend
-      - CORS_ALLOWED_ORIGINS=http://localhost,http://frontend
-    networks:
-      - plum-network
-
-networks:
-  plum-network:
-    driver: bridge
->>>>>>> 52b038ca4bba93cc54a40159cc8eb8c0fdc11314
