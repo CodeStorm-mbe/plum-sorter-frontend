@@ -58,13 +58,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       const response = await api.post('/auth/token/', { username, password });
-      const { access, refresh, user: userData } = response.data;
+      const { access, refresh} = response.data;
       console.log(response.data);
-      console.log(userData);
       // Stocker les tokens
       localStorage.setItem('token', access);
       localStorage.setItem('refreshToken', refresh);
-      
+      const responseUser = await api.post('/users/me');
+      const userData: User = responseUser.data as User;
       // Mettre à jour l'état
       setUser(userData);
       
