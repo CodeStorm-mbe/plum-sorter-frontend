@@ -11,6 +11,7 @@ import CategoryBadge from "../components/CategoryBadge"
 import ConfidenceBar from "../components/ConfidenceBar"
 import PageTransition from "../components/PageTransition"
 import { Eye, EyeOff, Info, AlertCircle, Upload } from "lucide-react"
+import { MantineProvider } from "@mantine/core"
 
 interface ResultProps {
   category: string
@@ -261,6 +262,7 @@ const PredictionPage: React.FC = () => {
   }, [])
 
   return (
+    <MantineProvider>
       <PageTransition>
         <div className="min-h-screen">
           <Navbar />
@@ -357,7 +359,8 @@ const PredictionPage: React.FC = () => {
             </div>
           </footer>
         </div>
-      </PageTransition>
+        </PageTransition>
+      </MantineProvider>
   )
 }
 
