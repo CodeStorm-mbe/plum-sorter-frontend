@@ -11,6 +11,7 @@ import { useAuth } from "../contexts/AuthContext"
 import { useLanguage } from "../contexts/LanguageContext"
 // Ajouter l'import pour le contexte de thème
 import { useTheme } from "../contexts/ThemeContext"
+import { ThemeProvider } from "next-themes"
 
 // Modifier la fonction UserMenu pour ajouter l'option de thème
 const UserMenu: React.FC = () => {
@@ -28,6 +29,7 @@ const UserMenu: React.FC = () => {
     }
 
     return (
+        <ThemeProvider>
         <div className="relative">
             <motion.button
                 className="flex items-center space-x-2 p-2 rounded-md hover:bg-background-light/50 transition-colors"
@@ -104,6 +106,7 @@ const UserMenu: React.FC = () => {
                 )}
             </AnimatePresence>
         </div>
+        </ThemeProvider>
     )
 }
 

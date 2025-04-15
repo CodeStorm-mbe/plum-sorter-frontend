@@ -16,6 +16,7 @@ import {
   IconMoon,
   IconBell
 } from '@tabler/icons-react';
+import { ThemeProvider } from 'next-themes';
 
 export function DashboardLayout() {
   const [opened, setOpened] = useState(false);
@@ -44,6 +45,7 @@ export function DashboardLayout() {
   ];
 
   return (
+    <ThemeProvider>
     <AppShell
       header={{ height: 60 }}
       navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}
@@ -145,6 +147,7 @@ export function DashboardLayout() {
         <Outlet />
       </AppShell.Main>
     </AppShell>
+    </ThemeProvider>
   );
 }
 
