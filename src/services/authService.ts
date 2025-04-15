@@ -3,7 +3,7 @@ import ApiService from './api';
 
 // Types pour l'authentification
 export interface LoginRequest {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -76,7 +76,7 @@ class AuthService {
       
       // Connecter l'utilisateur avec les identifiants fournis
       return await this.login({
-        email: userData.email,
+        username: userData.email,
         password: userData.password
       });
     } catch (error) {
