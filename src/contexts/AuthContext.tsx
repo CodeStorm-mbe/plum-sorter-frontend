@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const response = await api.post('/auth/login/', { email, password });
+      const response = await api.post('/auth/token/', { email, password });
       const { access, refresh, user: userData } = response.data;
       
       // Stocker les tokens
