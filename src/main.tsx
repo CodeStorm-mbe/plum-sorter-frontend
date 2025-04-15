@@ -8,7 +8,9 @@ import { ThemeProvider } from 'next-themes'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
-      <App />
+      <MantineProvider>
+        <App />
+      </MantineProvider>
     </ThemeProvider>
   </StrictMode>,
 )
