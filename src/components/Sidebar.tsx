@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { RolePermissionService } from '../services/rolePermissionService';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, User, Settings, Farm, Package, Image, BarChart2, Users, Database, Activity } from 'lucide-react';
+import { Home, User, Settings, Warehouse, Package, Image, BarChart2, Users, Database, Activity } from 'lucide-react';
 
 interface SidebarProps {
   className?: string;
@@ -29,20 +29,20 @@ const Sidebar: React.FC<SidebarProps> = ({ className = "" }) => {
     // Éléments spécifiques selon le rôle
     const roleItems: Record<string, any[]> = {
       farmer: [
-        { id: 'farms', label: 'Mes Fermes', path: '/farms', icon: <Farm size={20} /> },
+        { id: 'farms', label: 'Mes Fermes', path: '/farms', icon: <Warehouse size={20} /> },
         { id: 'batches', label: 'Mes Lots', path: '/batches', icon: <Package size={20} /> },
         { id: 'classifications', label: 'Classifications', path: '/classifications', icon: <Image size={20} /> },
       ],
       
       technician: [
-        { id: 'farms', label: 'Fermes', path: '/farms', icon: <Farm size={20} /> },
+        { id: 'farms', label: 'Fermes', path: '/farms', icon: <Warehouse size={20} /> },
         { id: 'batches', label: 'Lots', path: '/batches', icon: <Package size={20} /> },
         { id: 'classifications', label: 'Classifications', path: '/classifications', icon: <Image size={20} /> },
         { id: 'statistics', label: 'Statistiques', path: '/statistics', icon: <BarChart2 size={20} /> },
       ],
       
       admin: [
-        { id: 'farms', label: 'Fermes', path: '/farms', icon: <Farm size={20} /> },
+        { id: 'farms', label: 'Fermes', path: '/farms', icon: <Warehouse size={20} /> },
         { id: 'batches', label: 'Lots', path: '/batches', icon: <Package size={20} /> },
         { id: 'classifications', label: 'Classifications', path: '/classifications', icon: <Image size={20} /> },
         { id: 'statistics', label: 'Statistiques', path: '/statistics', icon: <BarChart2 size={20} /> },
