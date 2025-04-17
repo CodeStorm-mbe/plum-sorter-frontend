@@ -41,7 +41,7 @@ class DashboardService {
   static async getDashboardData(role: string): Promise<DashboardData> {
     try {
       // Données de base pour tous les rôles
-      const statsResponse = await api.get<StatisticsResponse>('classifications/stats/');
+      const statsResponse = await api.get<StatisticsResponse>('/plum-classifier/classifications/stats/');
       const baseData: DashboardData = {
         totalClassifications: statsResponse.data.total_classifications,
         averageConfidence: statsResponse.data.average_confidence,
