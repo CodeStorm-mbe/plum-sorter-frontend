@@ -200,7 +200,7 @@ class DashboardService {
   // Obtenir les statistiques globales
   static async getGlobalStatistics(): Promise<StatisticsResponse> {
     try {
-      const response = await api.get<StatisticsResponse>('classifications/stats/');
+      const response = await api.get<StatisticsResponse>('plum-classifier/classifications/stats/');
       return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des statistiques globales:', error);
