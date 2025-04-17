@@ -6,8 +6,7 @@ import { motion } from "framer-motion"
 import { Palette, Sun, Moon, Monitor, Check, AlertCircle } from "lucide-react"
 import Button from "../Button"
 import { useLanguage } from "../../contexts/LanguageContext"
-import { useTheme, type Theme, type AccentColor } from "../../contexts/ThemeContext"
-import { ThemeProvider } from "next-themes"
+import { useTheme, type Theme, type AccentColor} from "../../contexts/ThemeContext"
 
 const AppearanceSettings: React.FC = () => {
     const { t } = useLanguage()
@@ -35,7 +34,6 @@ const AppearanceSettings: React.FC = () => {
     }
 
     return (
-        <ThemeProvider>
         <div>
             <h2 className="text-xl font-title font-semibold mb-6 flex items-center">
                 <Palette className="h-5 w-5 mr-2 text-accent-primary" />
@@ -154,7 +152,6 @@ const AppearanceSettings: React.FC = () => {
                 </div>
             </div>
         </div>
-        </ThemeProvider>
     )
 }
 
