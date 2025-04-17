@@ -20,7 +20,7 @@ const fetchGlobalStatistics = async (params: { start_date?: string; end_date?: s
   if (params.start_date) queryParams.append('start_date', params.start_date);
   if (params.end_date) queryParams.append('end_date', params.end_date);
   
-  const response = await api.get(`/classifications/stats/?${queryParams.toString()}`);
+  const response = await api.get(`/plum-classifier/classifications/stats/?${queryParams.toString()}`);
   return response.data;
 };
 
