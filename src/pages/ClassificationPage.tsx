@@ -15,7 +15,7 @@ const fetchFarms = async (): Promise<Farm[]> => {
 
 // Service pour classifier une image
 const classifyImage = async (formData: FormData): Promise<PlumClassification> => {
-  const response = await api.post('/classifications/classify/', formData, {
+  const response = await api.post('/plum-classifier/classifications/classify/', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },

@@ -151,7 +151,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const resetPassword = async (token: string, password: string) => {
     try {
       setIsLoading(true);
-      await api.post('/auth/reset-password-confirm/', { token, password });
+      await api.post('/auth/password-reset/confirm/', { token, password });
       
       notifications.show({
         title: 'Mot de passe réinitialisé',
@@ -199,7 +199,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const resendVerificationEmail = async (email: string) => {
     try {
       setIsLoading(true);
-      await api.post('/auth/resend-verification/', { email });
+      await api.post('/auth/resend-verification-email/', { email });
       
       notifications.show({
         title: 'Email envoyé',

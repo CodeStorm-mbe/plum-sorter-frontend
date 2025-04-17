@@ -38,7 +38,7 @@ const deleteBatch = async (id: number): Promise<void> => {
 
 // Service pour classifier un lot d'images
 const classifyBatchImages = async ({ id, formData }: { id: number; formData: FormData }): Promise<any> => {
-  const response = await api.post(`/batches/${id}/classify_batch/`, formData, {
+  const response = await api.post(`/plum-classifier/batches/${id}/classify_batch/`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -471,7 +471,7 @@ export function BatchesPage() {
         </Card>
       )}
 
-      {/* Modal de création de lot */}
+      {/* Modal de création */}
       <Modal
         opened={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
@@ -481,36 +481,36 @@ export function BatchesPage() {
         <form onSubmit={form.onSubmit(handleCreateSubmit)}>
           <TextInput
             label="Nom du lot"
-            placeholder="Lot de prunes du 15/04/2025"
+            placeholder="Entrez le nom du lot"
             required
+            mb="md"
             {...form.getInputProps('name')}
           />
+          
           <TextInput
             label="Description"
-            placeholder="Description du lot"
-            mt="md"
+            placeholder="Entrez une description (optionnel)"
+            mb="md"
             {...form.getInputProps('description')}
           />
+          
           <Select
             label="Ferme"
             placeholder="Sélectionner une ferme"
             data={farms?.map(farm => ({ value: farm.id.toString(), label: farm.name })) || []}
             required
-            mt="md"
+            mb="xl"
             {...form.getInputProps('farm')}
           />
-          <Group justify="flex-end" mt="xl">
-            <Button variant="outline" onClick={() => setCreateModalOpen(false)}>
-              Annuler
-            </Button>
-            <Button type="submit" loading={createMutation.isPending}>
-              Créer
-            </Button>
+          
+          <Group justify="flex-end">
+            <Button variant="outline" onClick={() => setCreateModalOpen(false)}>Annuler</Button>
+            <Button type="submit" loading={createMutation.isPending}>Créer</Button>
           </Group>
         </form>
       </Modal>
 
-      {/* Modal d'édition de lot */}
+      {/* Modal d'édition */}
       <Modal
         opened={editModalOpen}
         onClose={() => setEditModalOpen(false)}
@@ -520,52 +520,49 @@ export function BatchesPage() {
         <form onSubmit={form.onSubmit(handleEditSubmit)}>
           <TextInput
             label="Nom du lot"
-            placeholder="Lot de prunes du 15/04/2025"
+            placeholder="Entrez le nom du lot"
             required
+            mb="md"
             {...form.getInputProps('name')}
           />
+          
           <TextInput
             label="Description"
-            placeholder="Description du lot"
-            mt="md"
+            placeholder="Entrez une description (optionnel)"
+            mb="md"
             {...form.getInputProps('description')}
           />
+          
           <Select
             label="Ferme"
             placeholder="Sélectionner une ferme"
             data={farms?.map(farm => ({ value: farm.id.toString(), label: farm.name })) || []}
             required
-            mt="md"
+            mb="xl"
             {...form.getInputProps('farm')}
           />
-          <Group justify="flex-end" mt="xl">
-            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
-              Annuler
-            </Button>
-            <Button type="submit" loading={updateMutation.isPending}>
-              Enregistrer
-            </Button>
+          
+          <Group justify="flex-end">
+            <Button variant="outline" onClick={() => setEditModalOpen(false)}>Annuler</Button>
+            <Button type="submit" loading={updateMutation.isPending}>Enregistrer</Button>
           </Group>
         </form>
       </Modal>
 
-      {/* Modal de confirmation de suppression */}
+      {/* Modal de suppression */}
       <Modal
         opened={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         title="Supprimer le lot"
         centered
       >
-        <Text>
+        <Text mb="xl">
           Êtes-vous sûr de vouloir supprimer le lot "{selectedBatch?.name}" ? Cette action est irréversible.
         </Text>
-        <Group justify="flex-end" mt="xl">
-          <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
-            Annuler
-          </Button>
-          <Button color="red" onClick={handleDelete} loading={deleteMutation.isPending}>
-            Supprimer
-          </Button>
+        
+        <Group justify="flex-end">
+          <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Annuler</Button>
+          <Button color="red" onClick={handleDelete} loading={deleteMutation.isPending}>Supprimer</Button>
         </Group>
       </Modal>
 
@@ -574,8 +571,8 @@ export function BatchesPage() {
         opened={uploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
         title={`Classifier des images pour le lot "${selectedBatch?.name}"`}
-        centered
         size="lg"
+        centered
       >
         <form onSubmit={uploadForm.onSubmit(handleUploadSubmit)}>
           <FileInput
@@ -587,28 +584,26 @@ export function BatchesPage() {
             clearable
             leftSection={<IconPhoto size={16} />}
             value={selectedFiles}
-            onChange={setSelectedFiles as any}
+            onChange={setSelectedFiles}
             mb="md"
           />
-
+          
           <Switch
             label="Utiliser TTA (Test Time Augmentation)"
             description="Améliore la précision mais ralentit le traitement"
             mb="xl"
             {...uploadForm.getInputProps('use_tta', { type: 'checkbox' })}
           />
-
-          <Group justify="flex-end" mt="xl">
-            <Button variant="outline" onClick={() => setUploadModalOpen(false)}>
-              Annuler
-            </Button>
+          
+          <Group justify="flex-end">
+            <Button variant="outline" onClick={() => setUploadModalOpen(false)}>Annuler</Button>
             <Button 
               type="submit" 
               leftSection={<IconUpload size={16} />} 
               loading={classifyBatchMutation.isPending}
               disabled={selectedFiles.length === 0}
             >
-              Classifier {selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''}
+              Classifier les images
             </Button>
           </Group>
         </form>

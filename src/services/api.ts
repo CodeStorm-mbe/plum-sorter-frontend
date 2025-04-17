@@ -40,8 +40,10 @@ api.interceptors.response.use(
         }
         
         // Appel pour rafraîchir le token
+        // Correction: La route doit être 'api/auth/token/refresh/'
+        const baseUrl = import.meta.env.VITE_API_URL || 'https://plum-api.onrender.com/api/';
         const response = await axios.post(
-          `${import.meta.env.VITE_API_URL || 'https://plum-api.onrender.com/api/'}auth/token/refresh/`,
+          `${baseUrl}auth/token/refresh/`,
           { refresh: refreshToken }
         );
         
