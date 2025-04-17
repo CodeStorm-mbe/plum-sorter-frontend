@@ -70,7 +70,7 @@ class ModelService {
   // Obtenir le modèle actif
   static async getActiveModel(): Promise<ModelVersion> {
     try {
-      const response = await ApiService.get<ModelVersion>('models/active/');
+      const response = await ApiService.get<ModelVersion>('/plum-classifier/models/active/');
       return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération du modèle actif:', error);
