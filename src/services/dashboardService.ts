@@ -75,7 +75,7 @@ class DashboardService {
       const userStatsResponse = await api.get('users/stats/');
       
       // Récupérer les informations sur le modèle actif
-      const modelInfoResponse = await api.get('models/info/');
+      const modelInfoResponse = await api.get('/plum-classifier/models/info/');
       
       return {
         ...baseData,

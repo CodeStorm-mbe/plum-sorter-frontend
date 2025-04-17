@@ -103,7 +103,7 @@ class ModelService {
   // Obtenir les informations sur le modèle chargé
   static async getModelInfo(): Promise<ModelInfo> {
     try {
-      const response = await ApiService.get<ModelInfo>('models/info/');
+      const response = await ApiService.get<ModelInfo>('/plum-classifier/models/info/');
       return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des informations du modèle:', error);
