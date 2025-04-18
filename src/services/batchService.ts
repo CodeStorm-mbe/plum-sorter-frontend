@@ -1,103 +1,81 @@
-// batchService.ts - Service pour la gestion des lots de prunes
-import ApiService from './api';
-import { PlumClassification } from './classificationService';
+import { Batch } from '../types';
+import api from './api';
 
-// Types pour les lots
-export interface PlumBatch {
-  id: number;
-  name: string;
-  description: string;
-  farm: number;
-  farm_details?: any;
-  created_by: number;
-  created_by_details?: any;
-  status: string;
-  status_display: string;
-  classification_summary: any;
-  total_plums: number;
-  quality_distribution: {
-    [key: string]: number;
-  };
-  classifications_count: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface BatchCreateRequest {
-  name: string;
-  description: string;
-  farm: number;
-}
-
-export interface BatchUpdateRequest {
-  name?: string;
-  description?: string;
-  status?: string;
-}
-
-// Service de gestion des lots
+// Service pour la gestion des lots de prunes
 class BatchService {
   // Obtenir la liste des lots
-  static async getBatches(): Promise<PlumBatch[]> {
+  static async getBatches(params = {}) {
     try {
-      const response = await ApiService.get<PlumBatch[]>('batches/');
+      const response = await api.get('batches/', { params });
       return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des lots:', error);
       throw error;
     }
   }
-  
-  // Obtenir un lot par ID
-  static async getBatchById(id: number): Promise<PlumBatch> {
+
+  // Obtenir un lot spécifique
+  static async getBatch(id: number) {
     try {
-      const response = await ApiService.get<PlumBatch>(`batches/${id}/`);
+      const response = await api.get(`batches/${id}/`);
       return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération du lot ${id}:`, error);
       throw error;
     }
   }
-  
+
   // Créer un nouveau lot
-  static async createBatch(batchData: BatchCreateRequest): Promise<PlumBatch> {
+  static async createBatch(batchData: Partial<Batch>) {
     try {
-      const response = await ApiService.post<PlumBatch>('batches/', batchData);
+      const response = await api.post('batches/', batchData);
       return response.data;
     } catch (error) {
       console.error('Erreur lors de la création du lot:', error);
       throw error;
     }
   }
-  
-  // Mettre à jour un lot
-  static async updateBatch(id: number, batchData: BatchUpdateRequest): Promise<PlumBatch> {
+
+  // Mettre à jour un lot existant
+  static async updateBatch(id: number, batchData: Partial<Batch>) {
     try {
-      const response = await ApiService.patch<PlumBatch>(`batches/${id}/`, batchData);
+      const response = await api.patch(`batches/${id}/`, batchData);
       return response.data;
     } catch (error) {
       console.error(`Erreur lors de la mise à jour du lot ${id}:`, error);
       throw error;
     }
   }
-  
+
   // Supprimer un lot
-  static async deleteBatch(id: number): Promise<void> {
+  static async deleteBatch(id: number) {
     try {
-      await ApiService.delete(`batches/${id}/`);
+      const response = await api.delete(`batches/${id}/`);
+      return response.data;
     } catch (error) {
       console.error(`Erreur lors de la suppression du lot ${id}:`, error);
       throw error;
     }
   }
-  
+
   // Obtenir les classifications d'un lot
-  static async getBatchClassifications(id: number): Promise<PlumClassification[]> {
+  static async getBatchClassifications(id: number) {
     try {
-      const response = await ApiService.get<PlumClassification[]>(`batches/${id}/classifications/`);
+      const response = await api.get(`batches/${id}/classifications/`);
       return response.data;
     } catch (error) {
       console.error(`Erreur lors de la récupération des classifications du lot ${id}:`, error);
+      throw error;
+    }
+  }
+
+  // Classifier un lot entier
+  static async classifyBatch(id: number, data: any) {
+    try {
+      const response = await api.post(`batches/${id}/classify_batch/`, data);
+      return response.data;
+    } catch (error) {
+      console.error(`Erreur lors de la classification du lot ${id}:`, error);
       throw error;
     }
   }

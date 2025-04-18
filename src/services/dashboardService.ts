@@ -1,4 +1,3 @@
-// dashboardService.ts - Service pour la gestion des données du dashboard
 import api from './api';
 import { StatisticsResponse, FarmStatistics, BatchStatistics, User } from '../types';
 
@@ -20,6 +19,7 @@ export interface AdminDashboardData extends DashboardData {
     averageProcessingTime: number;
     apiResponseTime: number;
     modelVersion: string;
+    modelAccuracy: number;
   };
 }
 
@@ -40,28 +40,14 @@ class DashboardService {
   // Obtenir les données du dashboard adaptées au rôle de l'utilisateur
   static async getDashboardData(role: string): Promise<DashboardData> {
     try {
-      // Données de base pour tous les rôles
-      const statsResponse = await api.get<StatisticsResponse>('/plum-classifier/classifications/stats/');
-      const baseData: DashboardData = {
-        totalClassifications: statsResponse.data.total_classifications,
-        averageConfidence: statsResponse.data.average_confidence,
-        classDistribution: statsResponse.data.class_counts,
-        classPercentages: statsResponse.data.class_percentages,
-        recentClassifications: statsResponse.data.recent_classifications || [],
+      // Utiliser le nouvel endpoint dashboard/user qui retourne les données adaptées au rôle
+      const response = await api.get('/dashboard/user/');
+      
+      // Ajouter le rôle de l'utilisateur aux données
+      return {
+        ...response.data,
         userRole: role
       };
-
-      // Données spécifiques selon le rôle
-      switch (role) {
-        case 'admin':
-          return await this.getAdminDashboardData(baseData);
-        case 'technician':
-          return await this.getTechnicianDashboardData(baseData);
-        case 'farmer':
-          return await this.getFarmerDashboardData(baseData);
-        default:
-          return baseData;
-      }
     } catch (error) {
       console.error('Erreur lors de la récupération des données du dashboard:', error);
       throw error;
@@ -69,132 +55,58 @@ class DashboardService {
   }
 
   // Obtenir les données spécifiques pour le dashboard administrateur
-  private static async getAdminDashboardData(baseData: DashboardData): Promise<AdminDashboardData> {
+  static async getAdminDashboardData(): Promise<AdminDashboardData> {
     try {
-      // Récupérer les statistiques des utilisateurs
-      const userStatsResponse = await api.get('users/stats/');
-      
-      // Récupérer les informations sur le modèle actif
-      const modelInfoResponse = await api.get('/plum-classifier/models/info/');
-      
-      return {
-        ...baseData,
-        totalUsers: userStatsResponse.data.total_users || 0,
-        usersByRole: userStatsResponse.data.role_distribution || {},
-        activeUsers: userStatsResponse.data.active_users || 0,
-        systemPerformance: {
-          averageProcessingTime: modelInfoResponse.data.average_processing_time || 0,
-          apiResponseTime: modelInfoResponse.data.api_response_time || 0,
-          modelVersion: modelInfoResponse.data.version || 'Inconnue'
-        }
-      };
+      const response = await api.get('/dashboard/admin/');
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des données admin:', error);
-      // En cas d'erreur, retourner les données de base
-      return baseData as AdminDashboardData;
+      throw error;
     }
   }
 
   // Obtenir les données spécifiques pour le dashboard technicien
-  private static async getTechnicianDashboardData(baseData: DashboardData): Promise<TechnicianDashboardData> {
+  static async getTechnicianDashboardData(): Promise<TechnicianDashboardData> {
     try {
-      // Récupérer les fermes gérées par le technicien
-      const farmsResponse = await api.get('farms/');
-      const farms = farmsResponse.data.results || [];
-      
-      // Récupérer les statistiques pour chaque ferme
-      const farmStats: FarmStatistics[] = [];
-      for (const farm of farms) {
-        try {
-          const farmStatsResponse = await api.get(`farms/${farm.id}/stats/`);
-          farmStats.push(farmStatsResponse.data);
-        } catch (error) {
-          console.error(`Erreur lors de la récupération des statistiques pour la ferme ${farm.id}:`, error);
-        }
-      }
-      
-      // Calculer les tendances de qualité (exemple simplifié)
-      const qualityTrends = this.calculateQualityTrends(farmStats);
-      
-      return {
-        ...baseData,
-        managedFarms: farms.length,
-        farmPerformance: farmStats,
-        qualityTrends
-      };
+      const response = await api.get('/dashboard/technician/');
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des données technicien:', error);
-      // En cas d'erreur, retourner les données de base
-      return baseData as TechnicianDashboardData;
+      throw error;
     }
   }
 
   // Obtenir les données spécifiques pour le dashboard agriculteur
-  private static async getFarmerDashboardData(baseData: DashboardData): Promise<FarmerDashboardData> {
+  static async getFarmerDashboardData(): Promise<FarmerDashboardData> {
     try {
-      // Récupérer les fermes de l'agriculteur
-      const farmsResponse = await api.get('farms/');
-      const farms = farmsResponse.data.results || [];
-      
-      // Récupérer les statistiques pour chaque ferme
-      const farmStats: FarmStatistics[] = [];
-      let totalBatches = 0;
-      let pendingBatches = 0;
-      
-      for (const farm of farms) {
-        try {
-          const farmStatsResponse = await api.get(`farms/${farm.id}/stats/`);
-          farmStats.push(farmStatsResponse.data);
-          
-          // Récupérer les lots de la ferme
-          const batchesResponse = await api.get(`farms/${farm.id}/batches/`);
-          const batches = batchesResponse.data || [];
-          
-          totalBatches += batches.length;
-          pendingBatches += batches.filter((batch: any) => batch.status === 'pending').length;
-        } catch (error) {
-          console.error(`Erreur lors de la récupération des données pour la ferme ${farm.id}:`, error);
-        }
-      }
-      
-      return {
-        ...baseData,
-        farms: farmStats,
-        totalBatches,
-        pendingBatches
-      };
+      const response = await api.get('/dashboard/farmer/');
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des données agriculteur:', error);
-      // En cas d'erreur, retourner les données de base
-      return baseData as FarmerDashboardData;
+      throw error;
     }
   }
 
-  // Méthode utilitaire pour calculer les tendances de qualité
-  private static calculateQualityTrends(farmStats: FarmStatistics[]): any[] {
-    // Exemple simplifié - dans une implémentation réelle, cela serait plus complexe
-    const trends: any[] = [];
-    
-    // Regrouper les données par catégorie de qualité
-    const categories = ['bonne_qualite', 'non_mure', 'tachetee', 'fissuree', 'meurtrie', 'pourrie'];
-    
-    categories.forEach(category => {
-      const trend = {
-        category,
-        data: farmStats.map(farm => {
-          const percentage = farm.class_percentages?.[category] || 0;
-          return {
-            farmId: farm.id,
-            farmName: farm.name,
-            percentage
-          };
-        })
-      };
-      
-      trends.push(trend);
-    });
-    
-    return trends;
+  // Obtenir les préférences de dashboard de l'utilisateur
+  static async getDashboardPreferences(): Promise<any> {
+    try {
+      const response = await api.get('/dashboard/preferences/my_preferences/');
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des préférences du dashboard:', error);
+      throw error;
+    }
+  }
+
+  // Mettre à jour les préférences de dashboard de l'utilisateur
+  static async updateDashboardPreferences(preferences: any): Promise<any> {
+    try {
+      const response = await api.put('/dashboard/preferences/update_preferences/', preferences);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des préférences du dashboard:', error);
+      throw error;
+    }
   }
 
   // Obtenir les statistiques globales

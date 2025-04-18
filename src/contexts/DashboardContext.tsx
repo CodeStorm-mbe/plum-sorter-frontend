@@ -39,7 +39,18 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       setError(null);
       
-      const data = await DashboardService.getDashboardData(user.role);
+      // Utiliser le service mis à jour pour récupérer les données du dashboard
+      let data;
+      
+      // Récupérer les données spécifiques au rôle
+      if (user.role === 'admin') {
+        data = await DashboardService.getAdminDashboardData();
+      } else if (user.role === 'technician') {
+        data = await DashboardService.getTechnicianDashboardData();
+      } else {
+        data = await DashboardService.getFarmerDashboardData();
+      }
+      
       setDashboardData(data);
       setLastUpdated(new Date());
     } catch (err: any) {
