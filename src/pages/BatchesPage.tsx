@@ -220,19 +220,28 @@ export function BatchesPage() {
 
   // Gérer le téléchargement d'images pour un lot
   const handleUploadSubmit = (values: typeof uploadForm.values) => {
-    if (selectedBatch && selectedFiles.length > 0) {
-      const formData = new FormData();
-      selectedFiles.forEach((file) => {
-        formData.append('images', file);
+    if (!selectedBatch || selectedFiles.length === 0) {
+      notifications.show({
+        title: 'Erreur',
+        message: 'Veuillez sélectionner au moins une image',
+        color: 'red',
       });
-      formData.append('use_tta', values.use_tta.toString());
-      console.log('FormData entries:', [...formData.entries()]);
-            
-      classifyBatchMutation.mutate({
-        id: selectedBatch.id,
-        formData,
-      });
+      return;
     }
+  
+    const formData = new FormData();
+    selectedFiles.forEach((file) => {
+      formData.append('images', file);
+    });
+    formData.append('use_tta', values.use_tta.toString());
+  
+    // Log pour déboguer
+    console.log('FormData entries:', [...formData.entries()]);
+  
+    classifyBatchMutation.mutate({
+      id: selectedBatch.id,
+      formData,
+    });
   };
 
   // Ouvrir le modal d'édition
