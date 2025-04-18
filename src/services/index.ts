@@ -1,19 +1,39 @@
 // index.ts - Export de tous les services
-export { default as ApiService } from './api';
-export { default as AuthService } from './authService';
-export { default as UserService } from './userService';
-export { default as FarmService } from './farmService';
-export { default as ClassificationService } from './classificationService';
-export { default as BatchService } from './batchService';
-export { default as ModelService } from './modelService';
-export { default as NotificationService } from './notificationService';
-export { default as dashboardService } from './dashboardService';
+import api from './api';
+import AuthService from './authService';
+import BatchService from './batchService';
+import ClassificationService from './classificationService';
+import DashboardService from './dashboardService';
+import FarmService from './farmService';
+import ModelService from './modelService';
+import { RolePermissionService, PERMISSIONS } from './rolePermissionService';
+import UserService from './userService';
+import NotificationService from './notificationService';
 
-// Réexporter les types
-export * from './authService';
-export * from './userService';
-export * from './farmService';
-export * from './classificationService';
-export * from './batchService';
-export * from './modelService';
-export * from './notificationService';
+// Nouveaux services
+import DashboardAnalyticsService from './dashboardAnalyticsService';
+import AdminDashboardService from './adminDashboardService';
+import TechnicianDashboardService from './technicianDashboardService';
+import SecurityService from './securityService';
+import OptimizationService from './optimizationService';
+
+export {
+  api,
+  AuthService,
+  BatchService,
+  ClassificationService,
+  DashboardService,
+  FarmService,
+  ModelService,
+  RolePermissionService,
+  PERMISSIONS,
+  UserService,
+  NotificationService,
+  
+  // Nouveaux services
+  DashboardAnalyticsService,
+  AdminDashboardService,
+  TechnicianDashboardService,
+  SecurityService,
+  OptimizationService
+};

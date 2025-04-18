@@ -1,32 +1,46 @@
-import { ModelVersion } from '../types';
+// modelService.ts - Service pour la gestion des modèles ML
 import api from './api';
-import { handlePaginatedResponse } from '../utils/apiUtils';
+import { ModelVersion } from '../types';
+import { normalizeResponse } from '../utils/apiUtils';
 
-// Service pour la gestion des modèles de classification
+// Types pour les modèles ML
+export interface ModelPerformance {
+  id: number;
+  name: string;
+  version: string;
+  accuracy: number;
+  precision: number;
+  recall: number;
+  f1_score: number;
+  confusion_matrix: number[][];
+  training_date: string;
+}
+
+export interface ModelActivationRequest {
+  is_active: boolean;
+  is_production?: boolean;
+}
+
+// Service pour la gestion des modèles ML
 class ModelService {
-  // Obtenir la liste des versions de modèle
+  // Obtenir la liste des versions de modèles
   static async getModelVersions(params = {}) {
     try {
-      const response = await api.get('plum-classifier/models/', { params });
-      return handlePaginatedResponse(response);
+      const response = await api.get('/plum-classifier/models/', { params });
+      return normalizeResponse(response.data.results);
     } catch (error) {
-      console.error('Erreur lors de la récupération des versions de modèle:', error);
+      console.error('Erreur lors de la récupération des versions de modèles:', error);
       throw error;
     }
-  }
-
-  // Alias pour getModelVersions pour compatibilité
-  static async getModels(params = {}) {
-    return this.getModelVersions(params);
   }
 
   // Obtenir une version de modèle spécifique
   static async getModelVersion(id: number) {
     try {
-      const response = await api.get(`plum-classifier/models/${id}/`);
-      return response.data;
+      const response = await api.get(`/plum-classifier/models/${id}/`);
+      return normalizeResponse(response.data) as ModelVersion;
     } catch (error) {
-      console.error(`Erreur lors de la récupération de la version de modèle ${id}:`, error);
+      console.error(`Erreur lors de la récupération du modèle ${id}:`, error);
       throw error;
     }
   }
@@ -34,96 +48,56 @@ class ModelService {
   // Obtenir le modèle actif
   static async getActiveModel() {
     try {
-      const response = await api.get('plum-classifier/models/active/');
-      return response.data;
+      const response = await api.get('/plum-classifier/models/active/');
+      return normalizeResponse(response.data) as ModelVersion;
     } catch (error) {
       console.error('Erreur lors de la récupération du modèle actif:', error);
       throw error;
     }
   }
 
-  // Activer une version de modèle
-  static async activateModel(id: number) {
+  // Activer/désactiver un modèle
+  static async updateModelActivation(id: number, data: ModelActivationRequest) {
     try {
-      const response = await api.post(`plum-classifier/models/${id}/activate/`);
-      return response.data;
+      const response = await api.patch(`/plum-classifier/models/${id}/update_activation/`, data);
+      return normalizeResponse(response.data) as ModelVersion;
     } catch (error) {
-      console.error(`Erreur lors de l'activation de la version de modèle ${id}:`, error);
+      console.error(`Erreur lors de la mise à jour de l'activation du modèle ${id}:`, error);
       throw error;
     }
   }
 
-  // Télécharger un nouveau modèle
-  static async uploadModel(formData: FormData) {
-    try {
-      const response = await api.post('plum-classifier/models/upload/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Erreur lors du téléchargement du modèle:', error);
-      throw error;
-    }
-  }
-
-  // Alias pour uploadModel pour compatibilité
-  static async reloadModel(formData?: FormData) {
-    if (formData) {
-      return this.uploadModel(formData);
-    }
-    
-    // Si aucun formData n'est fourni, simplement recharger le modèle actif
-    try {
-      const response = await api.post('plum-classifier/models/reload/');
-      return response.data;
-    } catch (error) {
-      console.error('Erreur lors du rechargement du modèle:', error);
-      throw error;
-    }
-  }
-
-  // Mettre à jour les métadonnées d'un modèle
-  static async updateModelMetadata(id: number, metadata: Partial<ModelVersion>) {
-    try {
-      const response = await api.patch(`plum-classifier/models/${id}/`, metadata);
-      return response.data;
-    } catch (error) {
-      console.error(`Erreur lors de la mise à jour des métadonnées du modèle ${id}:`, error);
-      throw error;
-    }
-  }
-
-  // Supprimer une version de modèle
-  static async deleteModelVersion(id: number) {
-    try {
-      const response = await api.delete(`plum-classifier/models/${id}/`);
-      return response.data;
-    } catch (error) {
-      console.error(`Erreur lors de la suppression de la version de modèle ${id}:`, error);
-      throw error;
-    }
-  }
-
-  // Obtenir les performances du modèle
+  // Obtenir les performances d'un modèle
   static async getModelPerformance(id: number) {
     try {
-      const response = await api.get(`plum-classifier/models/${id}/performance/`);
-      return response.data;
+      const response = await api.get(`/plum-classifier/models/${id}/performance/`);
+      return normalizeResponse(response.data) as ModelPerformance;
     } catch (error) {
       console.error(`Erreur lors de la récupération des performances du modèle ${id}:`, error);
       throw error;
     }
   }
 
-  // Obtenir l'historique des modèles
-  static async getModelHistory(params = {}) {
+  // Comparer les performances de plusieurs modèles
+  static async compareModels(modelIds: number[]) {
     try {
-      const response = await api.get('plum-classifier/models/history/', { params });
-      return handlePaginatedResponse(response);
+      const response = await api.get('/plum-classifier/models/compare/', {
+        params: { model_ids: modelIds.join(',') }
+      });
+      return normalizeResponse(response.data) as ModelPerformance[];
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'historique des modèles:', error);
+      console.error('Erreur lors de la comparaison des modèles:', error);
+      throw error;
+    }
+  }
+
+  // Obtenir l'historique des performances d'un modèle
+  static async getModelHistory(id: number) {
+    try {
+      const response = await api.get(`/plum-classifier/models/${id}/history/`);
+      return normalizeResponse(response.data);
+    } catch (error) {
+      console.error(`Erreur lors de la récupération de l'historique du modèle ${id}:`, error);
       throw error;
     }
   }

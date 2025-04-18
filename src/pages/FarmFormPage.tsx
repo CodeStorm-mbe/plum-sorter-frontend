@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Save, ArrowLeft, MapPin, Trash2 } from 'lucide-react';
-import FarmerSidebar from '../components/FarmerSidebar';
 import Button from '../components/Button';
 import PageTransition from '../components/PageTransition';
 import { FarmService } from '../services';
@@ -138,7 +137,6 @@ const FarmFormPage: React.FC = () => {
   return (
     <PageTransition>
       <div className="flex min-h-screen bg-background">
-        <FarmerSidebar />
         
         <div className="flex-1 ml-64">
           <div className="container mx-auto pt-24 pb-16 px-6">

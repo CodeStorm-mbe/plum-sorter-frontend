@@ -2,9 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { MantineProvider } from '@mantine/core'
-import { ThemeProvider } from './contexts/ThemeContext.tsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ThemeProvider } from './contexts/ThemeContext.tsx'
+import { MantineThemeProvider } from './components/MantineThemeProvider'
+import { RoleProvider } from './contexts/RoleContext.tsx'
 
 // Créer une instance de QueryClient
 const queryClient = new QueryClient({
@@ -19,12 +20,14 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider>
-      <MantineProvider>
-        <QueryClientProvider client={queryClient}>
-          <App />
-        </QueryClientProvider>
-      </MantineProvider>
-    </ThemeProvider>
+    <RoleProvider>
+      <ThemeProvider>
+        <MantineThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <App />
+          </QueryClientProvider>
+        </MantineThemeProvider>
+      </ThemeProvider>
+    </RoleProvider>
   </StrictMode>,
 )

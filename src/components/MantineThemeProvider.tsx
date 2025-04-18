@@ -1,36 +1,43 @@
 import React from 'react';
 import { MantineProvider, createTheme } from '@mantine/core';
-import { useTheme } from '../contexts/ThemeContext';
 
-// Créer un thème Mantine qui s'adapte au thème global
-const createMantineTheme = (isDark: boolean) => {
-  return createTheme({
-    // Utiliser la propriété colorScheme de manière compatible avec Mantine
-    primaryColor: 'blue',
-    // Autres personnalisations du thème Mantine si nécessaire
+// Import des styles Mantine
+import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
+import '@mantine/notifications/styles.css';
+import '@mantine/dropzone/styles.css';
+import '@mantine/charts/styles.css';
+
+interface MantineThemeProviderProps {
+  children: React.ReactNode;
+}
+
+export function MantineThemeProvider({ children }: MantineThemeProviderProps) {
+  // Créer un thème Mantine personnalisé
+  const theme = createTheme({
+    primaryColor: 'plum',
     colors: {
-      // Définir des couleurs personnalisées si nécessaire
+      plum: [
+        '#f9f0ff',
+        '#efd9ff',
+        '#ddb3ff',
+        '#ca8cff',
+        '#b866ff',
+        '#aa4dff',
+        '#a23dff',
+        '#8f2ce0',
+        '#7e28c9',
+        '#6c22b0'
+      ],
     },
-    components: {
-      // Personnaliser les composants si nécessaire
+    fontFamily: 'Inter, sans-serif',
+    headings: {
+      fontFamily: 'Poppins, sans-serif',
     },
   });
-};
 
-// Wrapper pour intégrer le thème avec Mantine
-export function MantineThemeProvider({ children }: { children: React.ReactNode }) {
-  const { theme } = useTheme();
-  
-  // Déterminer si le thème est sombre
-  const isDark = 
-    theme === 'dark' || 
-    (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  
-  // Créer le thème Mantine
-  const mantineTheme = createMantineTheme(isDark);
-  
   return (
-    <MantineProvider theme={mantineTheme} forceColorScheme={isDark ? 'dark' : 'light'}>
+    <MantineProvider theme={theme} defaultColorScheme="dark">
       {children}
     </MantineProvider>
   );

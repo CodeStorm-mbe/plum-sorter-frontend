@@ -1,63 +1,65 @@
-import { useState } from 'react';
-import { AppShell, Burger, Group, NavLink, Avatar, Text, UnstyledButton, Menu, rem, Divider, Title, useMantineColorScheme, ActionIcon, Box } from '@mantine/core';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import { AppShell, Group, Title, ActionIcon, Menu, Avatar, Box, Text, UnstyledButton, rem } from '@mantine/core';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { 
-  IconDashboard, 
-  IconHome2, 
-  IconApple, 
-  IconPackages, 
-  IconChartBar, 
-  IconSettings, 
   IconLogout, 
   IconUser,
   IconSun,
   IconMoon,
   IconBell
 } from '@tabler/icons-react';
+import { useNavigate } from 'react-router-dom';
+import { useMantineColorScheme } from '@mantine/core';
+import FarmerSidebar from '../components/FarmerSidebar';
+import TechnicianSidebar from '../components/TechnicianSidebar';
+import AdminSidebar from '../components/AdminSidebar';
 
 export function DashboardLayout() {
-  const [opened, setOpened] = useState(false);
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
-  const location = useLocation();
   const { setColorScheme } = useMantineColorScheme();
-
+  
   const handleLogout = () => {
     logout();
   };
-
+  
   const handleToggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
     setColorScheme(theme === 'dark' ? 'light' : 'dark');
   };
 
-  const navItems = [
-    { label: 'Tableau de bord', icon: <IconDashboard size={20} />, path: '/dashboard' },
-    { label: 'Fermes', icon: <IconHome2 size={20} />, path: '/farms' },
-    { label: 'Classification', icon: <IconApple size={20} />, path: '/classifications' },
-    { label: 'Lots', icon: <IconPackages size={20} />, path: '/batches' },
-    { label: 'Statistiques', icon: <IconChartBar size={20} />, path: '/statistics' },
-    { label: 'Paramètres', icon: <IconSettings size={20} />, path: '/settings' },
-  ];
+  // Fonction pour rendre la sidebar appropriée en fonction du rôle de l'utilisateur
+  const renderSidebar = () => {
+    if (!user) return null;
+    
+    switch (user.role) {
+      case 'admin':
+        return <AdminSidebar />;
+      case 'technician':
+        return <TechnicianSidebar />;
+      case 'farmer':
+      default:
+        return <FarmerSidebar />;
+    }
+  };
 
   return (
     <AppShell
       header={{ height: 60 }}
-      navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}
       padding="md"
+      layout="alt"
+      styles={{
+        main: {
+          background: theme === 'dark' ? '#121212' : '#f8f9fa',
+        },
+      }}
     >
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
           <Group>
-            <Burger
-              opened={opened}
-              onClick={() => setOpened((o) => !o)}
-              hiddenFrom="sm"
-              size="sm"
-            />
             <Title order={3} c="plum">Classification des Prunes</Title>
           </Group>
           <Group>
@@ -96,9 +98,6 @@ export function DashboardLayout() {
                 <Menu.Item leftSection={<IconUser style={{ width: rem(14), height: rem(14) }} />} onClick={() => navigate('/profile')}>
                   Mon profil
                 </Menu.Item>
-                <Menu.Item leftSection={<IconSettings style={{ width: rem(14), height: rem(14) }} />} onClick={() => navigate('/settings')}>
-                  Paramètres
-                </Menu.Item>
                 <Menu.Divider />
                 <Menu.Item 
                   color="red" 
@@ -112,38 +111,17 @@ export function DashboardLayout() {
           </Group>
         </Group>
       </AppShell.Header>
-
-      <AppShell.Navbar p="md">
-        <AppShell.Section grow>
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              label={item.label}
-              leftSection={item.icon}
-              active={location.pathname === item.path}
-              onClick={() => navigate(item.path)}
-              variant="filled"
-              mb={8}
-            />
-          ))}
-        </AppShell.Section>
+      
+      <div className="flex h-[calc(100vh-60px)]">
+        {/* Utiliser la sidebar appropriée en fonction du rôle */}
+        <div className="w-[280px] h-full">
+          {renderSidebar()}
+        </div>
         
-        <AppShell.Section>
-          <Divider my="sm" />
-          <Group justify="space-between" px="sm">
-            <Text size="xs" c="dimmed">
-              © 2025 Classification des Prunes
-            </Text>
-            <Text size="xs" c="dimmed">
-              v1.0.0
-            </Text>
-          </Group>
-        </AppShell.Section>
-      </AppShell.Navbar>
-
-      <AppShell.Main>
-        <Outlet />
-      </AppShell.Main>
+        <AppShell.Main className="flex-1 overflow-auto">
+          <Outlet />
+        </AppShell.Main>
+      </div>
     </AppShell>
   );
 }

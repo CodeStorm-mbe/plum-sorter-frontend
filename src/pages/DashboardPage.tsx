@@ -1,228 +1,189 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { useAuth } from '../contexts/AuthContext';
-import { useDashboard } from '../contexts/DashboardContext';
-import { RolePermissionService, PERMISSIONS } from '../services/rolePermissionService';
-import Navbar from '../components/Navbar';
-import StatsSummaryWidget from '../components/StatsSummaryWidget';
-import QualityDistributionWidget from '../components/QualityDistributionWidget';
-import RecentClassificationsWidget from '../components/RecentClassificationsWidget';
-import PageTransition from '../components/PageTransition';
-import { Calendar, Download, RefreshCw } from 'lucide-react';
-import Button from '../components/Button';
-import { Navigate } from 'react-router-dom';
+import { useRole, RoleBased } from '../contexts/RoleContext';
+import { Link } from 'react-router-dom';
+import { ArrowRight, BarChart2, Users, Database, Server, Layers, Image } from 'lucide-react';
+
+interface DashboardCardProps {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  to: string;
+  color: string;
+  delay?: number;
+}
+
+const DashboardCard: React.FC<DashboardCardProps> = ({ 
+  title, 
+  description, 
+  icon, 
+  to, 
+  color,
+  delay = 0 
+}) => {
+  return (
+    <motion.div
+      className={`card p-6 border ${color} hover:shadow-lg transition-all duration-300`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      whileHover={{ y: -5 }}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div className={`p-3 rounded-lg ${color.replace('border-', 'bg-').replace('/20', '/10')}`}>
+          {icon}
+        </div>
+        <Link to={to} className="text-white/60 hover:text-white transition-colors">
+          <ArrowRight className="h-5 w-5" />
+        </Link>
+      </div>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-white/60 mb-4">{description}</p>
+      <Link 
+        to={to} 
+        className={`inline-flex items-center text-sm font-medium ${color.replace('border-', 'text-').replace('/20', '')} hover:underline`}
+      >
+        Accéder
+        <ArrowRight className="h-4 w-4 ml-1" />
+      </Link>
+    </motion.div>
+  );
+};
 
 const DashboardPage: React.FC = () => {
-  const { user } = useAuth();
-  const { dashboardData, isLoading, error, refreshData, lastUpdated } = useDashboard();
-  
-  // Rediriger les utilisateurs de type "farmer" vers le tableau de bord spécifique
-  if (user && user.role === 'farmer') {
-    return <Navigate to="/farmer-dashboard" replace />;
-  }
-  const [dateRange, setDateRange] = useState('week');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { isAdmin, isTechnician, isFarmer } = useRole();
 
-  // Fonction pour rafraîchir les données du dashboard
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await refreshData();
-    setIsRefreshing(false);
-  };
-
-  // Titre du dashboard adapté au rôle
-  const getDashboardTitle = () => {
-    if (!user) return 'Dashboard';
-    
-    switch (user.role) {
-      case 'admin':
-        return 'Dashboard Administrateur';
-      case 'technician':
-        return 'Dashboard Technicien';
-      case 'farmer':
-        return 'Dashboard Agriculteur';
-      default:
-        return 'Dashboard';
+  // Rediriger vers le dashboard spécifique au rôle
+  React.useEffect(() => {
+    if (isAdmin) {
+      window.location.href = '/admin-dashboard';
+    } else if (isTechnician) {
+      window.location.href = '/technician-dashboard';
+    } else if (isFarmer) {
+      window.location.href = '/farmer-dashboard';
     }
-  };
+  }, [isAdmin, isTechnician, isFarmer]);
 
   return (
-    <PageTransition>
-      <div className="min-h-screen">
-        <Navbar />
+    <div className="container mx-auto pt-28 pb-16 px-4 md:px-8">
+      <motion.div
+        className="mb-8"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h1 className="text-3xl md:text-4xl font-title font-bold mb-4 bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
+          Tableau de bord
+        </h1>
+        <p className="text-white/60 max-w-3xl">
+          Bienvenue sur le tableau de bord de TriPrune. Accédez à toutes les fonctionnalités du système de classification des prunes.
+        </p>
+      </motion.div>
 
-        <div className="container mx-auto pt-28 pb-16 px-4 md:px-8">
-          <motion.div
-            className="flex flex-col md:flex-row items-center justify-between mb-8"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-3xl md:text-4xl font-title font-bold mb-4 md:mb-0 bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
-              {getDashboardTitle()}
-            </h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <RoleBased requiredRole={['admin', 'technician']}>
+          <DashboardCard
+            title="Statistiques"
+            description="Consultez les statistiques détaillées sur les classifications et les performances."
+            icon={<BarChart2 className="h-6 w-6 text-blue-500" />}
+            to="/statistics"
+            color="border-blue-500/20"
+            delay={0.1}
+          />
+        </RoleBased>
 
-            <div className="flex flex-wrap gap-4">
-              <motion.div
-                className="relative"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <select
-                  className="bg-background-light/50 border border-white/10 text-white rounded-md px-4 py-2 pr-8 appearance-none focus:outline-none focus:ring-1 focus:ring-accent-primary"
-                  value={dateRange}
-                  onChange={(e) => setDateRange(e.target.value)}
-                >
-                  <option value="day">Aujourd'hui</option>
-                  <option value="week">Cette semaine</option>
-                  <option value="month">Ce mois</option>
-                  <option value="year">Cette année</option>
-                </select>
-                <Calendar className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-accent-primary pointer-events-none" />
-              </motion.div>
+        <RoleBased requiredRole="admin">
+          <DashboardCard
+            title="Gestion des utilisateurs"
+            description="Gérez les utilisateurs, leurs rôles et leurs permissions."
+            icon={<Users className="h-6 w-6 text-purple-500" />}
+            to="/admin/users"
+            color="border-purple-500/20"
+            delay={0.2}
+          />
+        </RoleBased>
 
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <Button 
-                  variant="outline" 
-                  icon={<RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />} 
-                  size="md"
-                  onClick={handleRefresh}
-                  disabled={isRefreshing}
-                >
-                  {isRefreshing ? 'Actualisation...' : 'Actualiser'}
-                </Button>
-              </motion.div>
+        <DashboardCard
+          title="Fermes"
+          description="Consultez et gérez les fermes enregistrées dans le système."
+          icon={<Layers className="h-6 w-6 text-green-500" />}
+          to="/farms"
+          color="border-green-500/20"
+          delay={0.3}
+        />
 
-              {RolePermissionService.hasPermission(user, PERMISSIONS.EXPORT_STATISTICS) && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                >
-                  <Button variant="outline" icon={<Download className="h-4 w-4 mr-2" />} size="md">
-                    Exporter
-                  </Button>
-                </motion.div>
-              )}
-            </div>
-          </motion.div>
+        <DashboardCard
+          title="Classifications"
+          description="Accédez aux classifications existantes ou créez-en de nouvelles."
+          icon={<Image className="h-6 w-6 text-amber-500" />}
+          to="/classifications"
+          color="border-amber-500/20"
+          delay={0.4}
+        />
 
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-primary"></div>
-            </div>
-          ) : error ? (
-            <div className="card p-6 text-center">
-              <p className="text-red-500 mb-4">{error}</p>
-              <Button variant="primary" onClick={handleRefresh}>Réessayer</Button>
-            </div>
-          ) : (
-            <>
-              {/* Widgets du dashboard adaptés au rôle */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <StatsSummaryWidget />
-                <QualityDistributionWidget />
-              </div>
+        <RoleBased requiredRole="admin">
+          <DashboardCard
+            title="Gestion des modèles"
+            description="Gérez les modèles de classification et leurs versions."
+            icon={<Database className="h-6 w-6 text-rose-500" />}
+            to="/admin/models"
+            color="border-rose-500/20"
+            delay={0.5}
+          />
+        </RoleBased>
 
-              {/* Classifications récentes */}
-              <div className="mb-8">
-                <RecentClassificationsWidget />
-              </div>
-
-              {/* Widgets spécifiques au rôle */}
-              {user?.role === 'admin' && (
-                <div className="mb-8">
-                  {/* Widgets spécifiques à l'administrateur */}
-                  <div className="card p-4">
-                    <h3 className="text-xl font-title font-semibold mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                      Administration du système
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 bg-background-light/30 rounded-lg">
-                        <h4 className="font-semibold mb-2">Gestion des utilisateurs</h4>
-                        <p className="text-white/60 mb-4">Gérez les utilisateurs et leurs permissions.</p>
-                        <Button variant="primary" size="sm" href="/admin/users">
-                          Gérer les utilisateurs
-                        </Button>
-                      </div>
-                      <div className="p-4 bg-background-light/30 rounded-lg">
-                        <h4 className="font-semibold mb-2">Gestion des modèles</h4>
-                        <p className="text-white/60 mb-4">Configurez les modèles de classification.</p>
-                        <Button variant="primary" size="sm" href="/admin/models">
-                          Gérer les modèles
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {user?.role === 'technician' && (
-                <div className="mb-8">
-                  {/* Widgets spécifiques au technicien */}
-                  <div className="card p-4">
-                    <h3 className="text-xl font-title font-semibold mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                      Suivi des fermes
-                    </h3>
-                    <p className="text-white/60 mb-4">
-                      Visualisez et analysez les performances des fermes que vous gérez.
-                    </p>
-                    <Button variant="primary" href="/farms">
-                      Voir toutes les fermes
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {user?.role === 'farmer' && (
-                <div className="mb-8">
-                  {/* Widgets spécifiques à l'agriculteur */}
-                  <div className="card p-4">
-                    <h3 className="text-xl font-title font-semibold mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                      Mes fermes et lots
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 bg-background-light/30 rounded-lg">
-                        <h4 className="font-semibold mb-2">Nouvelle classification</h4>
-                        <p className="text-white/60 mb-4">Classifiez de nouvelles images de prunes.</p>
-                        <Button variant="primary" size="sm" href="/classifications/new">
-                          Classifier une image
-                        </Button>
-                      </div>
-                      <div className="p-4 bg-background-light/30 rounded-lg">
-                        <h4 className="font-semibold mb-2">Gérer mes lots</h4>
-                        <p className="text-white/60 mb-4">Consultez et gérez vos lots de prunes.</p>
-                        <Button variant="primary" size="sm" href="/batches">
-                          Voir mes lots
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {lastUpdated && (
-            <div className="text-center text-white/40 text-sm mt-8">
-              Dernière mise à jour: {new Date(lastUpdated).toLocaleString('fr-FR')}
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <footer className="py-8 px-4 md:px-8 lg:px-16 bg-background-light/50 backdrop-blur-md border-t border-white/5">
-          <div className="container mx-auto text-center">
-            <p className="text-white/60">© 2025 TriPrune - Projet JCIA Hackathon</p>
-          </div>
-        </footer>
+        <RoleBased requiredRole="admin">
+          <DashboardCard
+            title="État du système"
+            description="Consultez l'état et les performances du système."
+            icon={<Server className="h-6 w-6 text-cyan-500" />}
+            to="/admin/system"
+            color="border-cyan-500/20"
+            delay={0.6}
+          />
+        </RoleBased>
       </div>
-    </PageTransition>
+
+      <motion.div
+        className="card p-6 bg-gradient-to-br from-accent-primary/20 to-accent-secondary/5 border border-accent-primary/20"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.7 }}
+      >
+        <h2 className="text-2xl font-semibold mb-4">Accès rapide</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <RoleBased requiredRole={['admin', 'technician', 'farmer']}>
+            <Link 
+              to="/classifications/new" 
+              className="p-4 bg-background-light/30 rounded-lg hover:bg-background-light/50 transition-colors"
+            >
+              <h3 className="font-semibold mb-2">Nouvelle classification</h3>
+              <p className="text-white/60 text-sm">Classifier de nouvelles images de prunes.</p>
+            </Link>
+          </RoleBased>
+
+          <RoleBased requiredRole={['admin', 'technician']}>
+            <Link 
+              to="/reports" 
+              className="p-4 bg-background-light/30 rounded-lg hover:bg-background-light/50 transition-colors"
+            >
+              <h3 className="font-semibold mb-2">Rapports</h3>
+              <p className="text-white/60 text-sm">Générer et exporter des rapports détaillés.</p>
+            </Link>
+          </RoleBased>
+
+          <RoleBased requiredRole={['admin', 'farmer']}>
+            <Link 
+              to="/farms/new" 
+              className="p-4 bg-background-light/30 rounded-lg hover:bg-background-light/50 transition-colors"
+            >
+              <h3 className="font-semibold mb-2">Nouvelle ferme</h3>
+              <p className="text-white/60 text-sm">Enregistrer une nouvelle ferme dans le système.</p>
+            </Link>
+          </RoleBased>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 
