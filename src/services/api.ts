@@ -3,7 +3,7 @@ import { prepareApiRequest } from '../utils/apiUtils';
 
 // Créer une instance axios avec la configuration de base
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000/api',
+  baseURL: process.env.REACT_APP_API_URL || 'https://plum-api.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
   },
