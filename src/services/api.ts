@@ -18,7 +18,8 @@ api.interceptors.request.use(
     }
     
     // Convertir les données de la requête de camelCase à snake_case
-    if (config.data) {
+    // Mais seulement si ce n'est pas un FormData
+    if (config.data && !(config.data instanceof FormData)) {
       config.data = prepareApiRequest(config.data);
     }
     
@@ -28,6 +29,7 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
 
 // Intercepteur pour gérer les erreurs de réponse
 api.interceptors.response.use(
