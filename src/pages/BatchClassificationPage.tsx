@@ -110,9 +110,10 @@ const BatchClassificationPage = () => {
       
       // Créer un FormData pour l'envoi des fichiers
       const formData = new FormData();
-      files.forEach(file => {
-        formData.append('images', file);
-      });
+      for (let i = 0; i < files.length; i++) {
+        formData.append('images', files[i]);
+      }
+      
       
       // Ajouter les autres données
       formData.append('farm_id', farm.id.toString());
