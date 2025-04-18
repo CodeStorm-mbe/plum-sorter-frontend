@@ -6,7 +6,8 @@ import { Plus, Edit, Trash2, FileText, BarChart, Image } from "lucide-react";
 import Navbar from "../components/Navbar";
 import PageTransition from "../components/PageTransition";
 import { useAuth } from "../contexts/AuthContext";
-import { BatchService, FarmService, PlumBatch, Farm } from "../services";
+import { BatchService, FarmService } from "../services";
+import { PlumBatch, Farm } from "../types";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
@@ -314,7 +315,7 @@ const BatchPage = () => {
                       <p className="text-white/80 line-clamp-2 mb-4">{batch.description}</p>
                       <div className="grid grid-cols-2 gap-2 text-sm text-white/60">
                         <div>Total: {batch.total_plums || 0} prunes</div>
-                        <div>Classifications: {batch.classifications_count || 0}</div>
+                        <div>Classifications: {batch.total_plums || 0}</div>
                       </div>
                     </div>
                     <div className="flex justify-between mt-4">
@@ -450,7 +451,7 @@ const BatchPage = () => {
             </DialogHeader>
             <div className="py-4">
               <p className="text-white/80">
-                Êtes-vous sûr de vouloir supprimer le lot "{selectedBatch?.name}" ? Cette action est irréversible et supprimera également toutes les classifications associées.
+                Êtes-vous sûr de vouloir supprimer le lot "{selectedBatch?.name}" ? Cette action est irréversible.
               </p>
             </div>
             <DialogFooter>
@@ -464,8 +465,8 @@ const BatchPage = () => {
               </Button>
               <Button
                 type="button"
-                variant="destructive"
                 onClick={handleDelete}
+                className="bg-red-500 hover:bg-red-600"
                 disabled={isLoading}
               >
                 {isLoading ? <LoadingSpinner size="sm" /> : "Supprimer"}
@@ -473,13 +474,6 @@ const BatchPage = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        {/* Footer */}
-        <footer className="py-8 px-4 md:px-8 lg:px-16 bg-background-light/50 backdrop-blur-md border-t border-white/5">
-          <div className="container mx-auto text-center">
-            <p className="text-white/60">© 2025 TriPrune - Projet JCIA Hackathon</p>
-          </div>
-        </footer>
       </div>
     </PageTransition>
   );

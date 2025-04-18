@@ -19,7 +19,7 @@ export const ClassificationChart: React.FC<ClassificationChartProps> = ({ data, 
 
   // Si aucune donnée, afficher un message
   if (chartData.length === 0) {
-    return <Text align="center">Aucune donnée disponible</Text>;
+    return <Text ta="center">Aucune donnée disponible</Text>;
   }
 
   return (

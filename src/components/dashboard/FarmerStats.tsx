@@ -18,30 +18,30 @@ export const FarmerStats: React.FC<FarmerStatsProps> = ({ totalBatches, pendingB
         <Title order={3}>Statistiques de l'agriculteur</Title>
       </Card.Section>
       <Card.Section p="lg">
-        <Stack spacing="md">
-          <Group position="apart">
+        <Stack gap="md">
+          <Group justify="space-between">
             <Group>
               <IconPlant size={24} color="#40c057" />
               <div>
                 <Text>Fermes</Text>
-                <Text weight={700} size="lg">{farms}</Text>
+                <Text fw={700} size="lg">{farms}</Text>
               </div>
             </Group>
             <Badge color="green" size="lg">{farms > 1 ? 'Fermes actives' : 'Ferme active'}</Badge>
           </Group>
 
-          <Group position="apart">
+          <Group justify="space-between">
             <Group>
               <IconPackage size={24} color="#228be6" />
               <div>
                 <Text>Lots totaux</Text>
-                <Text weight={700} size="lg">{totalBatches}</Text>
+                <Text fw={700} size="lg">{totalBatches}</Text>
               </div>
             </Group>
             <RingProgress
               sections={[{ value: pendingPercentage, color: 'orange' }]}
               label={
-                <Text size="xs" align="center">
+                <Text size="xs" ta="center">
                   {pendingPercentage}%
                 </Text>
               }
@@ -49,12 +49,12 @@ export const FarmerStats: React.FC<FarmerStatsProps> = ({ totalBatches, pendingB
             />
           </Group>
 
-          <Group position="apart">
+          <Group justify="space-between">
             <Group>
               <IconClock size={24} color="#fd7e14" />
               <div>
                 <Text>Lots en attente</Text>
-                <Text weight={700} size="lg">{pendingBatches}</Text>
+                <Text fw={700} size="lg">{pendingBatches}</Text>
               </div>
             </Group>
             <Badge color="orange" size="lg">En attente</Badge>

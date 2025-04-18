@@ -15,7 +15,7 @@ import {
 } from '@mantine/core';
 import { IconUpload, IconPhoto } from '@tabler/icons-react';
 import { notifications } from '../../utils/notifications';
-import { classificationService } from '../../services';
+import { ClassificationService } from '../../services';
 
 export const BatchClassification: React.FC<{ batchId: number }> = ({ batchId }) => {
   const [files, setFiles] = useState<File[]>([]);
@@ -66,7 +66,7 @@ export const BatchClassification: React.FC<{ batchId: number }> = ({ batchId }) 
         });
       }, 500);
       
-      const response = await classificationService.classifyBatch(batchId, formData);
+      const response = await ClassificationService.classifyBatch(batchId, formData);
       
       clearInterval(progressInterval);
       setProgress(100);
@@ -96,7 +96,7 @@ export const BatchClassification: React.FC<{ batchId: number }> = ({ batchId }) 
       <Card shadow="sm" p="lg" radius="md" withBorder>
         <Title order={3} mb="md">Classification par lot</Title>
         
-        <Stack spacing="md">
+        <Stack gap="md">
           <Text>
             Sélectionnez plusieurs images de prunes pour les classifier en une seule opération.
             Cette fonctionnalité est utile pour traiter rapidement un grand nombre d'images.
@@ -108,14 +108,14 @@ export const BatchClassification: React.FC<{ batchId: number }> = ({ batchId }) 
             accept="image/png,image/jpeg,image/jpg"
             multiple
             clearable
-            icon={<IconUpload size={14} />}
+            leftSection={<IconUpload size={14} />}
             value={files}
             onChange={handleFilesChange}
             disabled={isSubmitting}
           />
           
           {files.length > 0 && (
-            <Text size="sm" color="dimmed">
+            <Text size="sm" c="dimmed">
               {files.length} image{files.length > 1 ? 's' : ''} sélectionnée{files.length > 1 ? 's' : ''}
             </Text>
           )}
@@ -129,15 +129,15 @@ export const BatchClassification: React.FC<{ batchId: number }> = ({ batchId }) 
           />
           
           {isSubmitting && (
-            <Stack spacing="xs">
-              <Text size="sm" align="center">{progress}% - Classification en cours...</Text>
+            <Stack gap="xs">
+              <Text size="sm" ta="center">{progress}% - Classification en cours...</Text>
               <Progress value={progress} size="md" radius="xl" />
             </Stack>
           )}
           
-          <Group position="right" mt="md">
+          <Group justify="flex-end" mt="md">
             <Button 
-              leftIcon={<IconPhoto size={16} />} 
+              leftSection={<IconPhoto size={16} />} 
               onClick={handleClassifyBatch}
               loading={isSubmitting}
               disabled={files.length === 0}
@@ -159,37 +159,37 @@ export const BatchClassification: React.FC<{ batchId: number }> = ({ batchId }) 
         {results.length === 0 ? (
           <Loader />
         ) : (
-          <Stack spacing="md">
+          <Stack gap="md">
             <Text>
               {results.length} image{results.length > 1 ? 's ont' : ' a'} été classifiée{results.length > 1 ? 's' : ''} avec succès.
             </Text>
             
             <Grid>
               {results.map((result, index) => (
-                <Grid.Col key={index} span={12} md={6}>
+                <Grid.Col key={index} span={6}>
                   <Card shadow="sm" p="md" withBorder>
-                    <Group position="apart">
-                      <Text weight={500}>Image {index + 1}</Text>
-                      <Text color={result.success ? 'green' : 'red'}>
+                    <Group justify="space-between">
+                      <Text fw={500}>Image {index + 1}</Text>
+                      <Text c={result.success ? 'green' : 'red'}>
                         {result.success ? 'Succès' : 'Échec'}
                       </Text>
                     </Group>
                     
                     {result.success && (
-                      <Stack spacing="xs" mt="md">
-                        <Group position="apart">
+                      <Stack gap="xs" mt="md">
+                        <Group justify="space-between">
                           <Text>Classe:</Text>
-                          <Text weight={500}>{result.class_name}</Text>
+                          <Text fw={500}>{result.class_name}</Text>
                         </Group>
-                        <Group position="apart">
+                        <Group justify="space-between">
                           <Text>Confiance:</Text>
-                          <Text weight={500}>{(result.confidence_score * 100).toFixed(1)}%</Text>
+                          <Text fw={500}>{(result.confidence_score * 100).toFixed(1)}%</Text>
                         </Group>
                       </Stack>
                     )}
                     
                     {!result.success && (
-                      <Text color="red" mt="md">
+                      <Text c="red" mt="md">
                         Erreur: {result.error || 'Une erreur est survenue'}
                       </Text>
                     )}

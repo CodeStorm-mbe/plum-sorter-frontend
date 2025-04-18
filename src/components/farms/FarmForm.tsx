@@ -65,7 +65,7 @@ export const FarmForm: React.FC<FarmFormProps> = ({
 
   return (
     <Box component="form" onSubmit={handleSubmit(handleFormSubmit)}>
-      <Stack spacing="md">
+      <Stack gap="md">
         <TextInput
           label="Nom de la ferme"
           placeholder="Entrez le nom de la ferme"
@@ -86,9 +86,8 @@ export const FarmForm: React.FC<FarmFormProps> = ({
           label="Taille (hectares)"
           placeholder="Entrez la taille de la ferme en hectares"
           min={0}
-          precision={2}
+          decimalScale={2}
           step={0.5}
-          {...register('size', { valueAsNumber: true })}
           error={errors.size?.message}
           onChange={(value) => setValue('size', value as number)}
         />
@@ -107,10 +106,9 @@ export const FarmForm: React.FC<FarmFormProps> = ({
           <NumberInput
             label="Latitude"
             placeholder="Latitude"
-            precision={6}
+            decimalScale={6}
             min={-90}
             max={90}
-            {...register('latitude', { valueAsNumber: true })}
             error={errors.latitude?.message}
             onChange={(value) => setValue('latitude', value as number)}
           />
@@ -118,16 +116,15 @@ export const FarmForm: React.FC<FarmFormProps> = ({
           <NumberInput
             label="Longitude"
             placeholder="Longitude"
-            precision={6}
+            decimalScale={6}
             min={-180}
             max={180}
-            {...register('longitude', { valueAsNumber: true })}
             error={errors.longitude?.message}
             onChange={(value) => setValue('longitude', value as number)}
           />
         </Group>
 
-        <Group position="right" mt="md">
+        <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={onCancel}>
             Annuler
           </Button>

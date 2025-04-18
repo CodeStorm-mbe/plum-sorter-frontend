@@ -29,7 +29,7 @@ import { FarmForm } from './FarmForm';
 import { BatchList } from '../batches/BatchList';
 import { BatchForm } from '../batches/BatchForm';
 import { Farm } from '../../types';
-import { farmService, batchService } from '../../services';
+import { FarmService, BatchService } from '../../services';
 
 export const FarmDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -60,7 +60,7 @@ export const FarmDetail: React.FC = () => {
   const loadFarm = async () => {
     try {
       setIsLoading(true);
-      const data = await farmService.getFarm(farmId);
+      const data = await FarmService.getFarm(farmId);
       setFarm(data);
     } catch (error: any) {
       notifications.show({
@@ -77,7 +77,7 @@ export const FarmDetail: React.FC = () => {
   // Fonction pour charger les statistiques de la ferme
   const loadFarmStats = async () => {
     try {
-      const data = await farmService.getFarmStats(farmId);
+      const data = await FarmService.getFarmStats(farmId);
       setFarmStats(data);
     } catch (error: any) {
       console.error('Erreur lors du chargement des statistiques:', error);
@@ -89,7 +89,7 @@ export const FarmDetail: React.FC = () => {
   const loadFarmBatches = async () => {
     try {
       setBatchesLoading(true);
-      const data = await farmService.getFarmBatches(farmId);
+      const data = await FarmService.getFarmBatches(farmId);
       setBatches(data.results || []);
     } catch (error: any) {
       console.error('Erreur lors du chargement des lots:', error);
@@ -103,7 +103,7 @@ export const FarmDetail: React.FC = () => {
   const handleUpdateFarm = async (data: any) => {
     try {
       setIsSubmitting(true);
-      await farmService.updateFarm(farmId, data);
+      await FarmService.updateFarm(farmId, data);
       notifications.show({
         title: 'Succès',
         message: 'Ferme mise à jour avec succès',
@@ -126,7 +126,7 @@ export const FarmDetail: React.FC = () => {
   const handleDeleteFarm = async () => {
     try {
       setIsSubmitting(true);
-      await farmService.deleteFarm(farmId);
+      await FarmService.deleteFarm(farmId);
       notifications.show({
         title: 'Succès',
         message: 'Ferme supprimée avec succès',
@@ -149,7 +149,7 @@ export const FarmDetail: React.FC = () => {
   const handleCreateBatch = async (data: any) => {
     try {
       setIsSubmitting(true);
-      await batchService.createBatch({
+      await BatchService.createBatch({
         ...data,
         farm: farmId
       });
@@ -182,11 +182,11 @@ export const FarmDetail: React.FC = () => {
   if (!farm) {
     return (
       <Card shadow="sm" p="lg" radius="md" withBorder>
-        <Text align="center" color="dimmed">
+        <Text ta="center" c="dimmed">
           Ferme non trouvée
         </Text>
         <Button 
-          leftIcon={<IconArrowLeft size={16} />} 
+          leftSection={<IconArrowLeft size={16} />} 
           onClick={() => navigate('/farms')}
           mt="md"
           variant="outline"
@@ -199,7 +199,7 @@ export const FarmDetail: React.FC = () => {
 
   return (
     <>
-      <Group position="apart" mb="md">
+      <Group justify="space-between" mb="md">
         <Group>
           <ActionIcon size="lg" variant="light" onClick={() => navigate('/farms')}>
             <IconArrowLeft size={20} />
@@ -209,7 +209,7 @@ export const FarmDetail: React.FC = () => {
         <Group>
           <Button 
             variant="outline" 
-            leftIcon={<IconEdit size={16} />} 
+            leftSection={<IconEdit size={16} />} 
             onClick={() => setIsEditModalOpen(true)}
           >
             Modifier
@@ -217,7 +217,7 @@ export const FarmDetail: React.FC = () => {
           <Button 
             variant="filled" 
             color="red" 
-            leftIcon={<IconTrash size={16} />} 
+            leftSection={<IconTrash size={16} />} 
             onClick={() => setIsDeleteModalOpen(true)}
           >
             Supprimer
@@ -225,18 +225,18 @@ export const FarmDetail: React.FC = () => {
         </Group>
       </Group>
 
-      <Tabs value={activeTab} onTabChange={setActiveTab}>
+      <Tabs value={activeTab} onChange={setActiveTab}>
         <Tabs.List>
-          <Tabs.Tab value="overview" icon={<IconPlant size={14} />}>Vue d'ensemble</Tabs.Tab>
-          <Tabs.Tab value="batches" icon={<IconPackage size={14} />}>Lots</Tabs.Tab>
-          <Tabs.Tab value="statistics" icon={<IconChartBar size={14} />}>Statistiques</Tabs.Tab>
+          <Tabs.Tab value="overview" leftSection={<IconPlant size={14} />}>Vue d'ensemble</Tabs.Tab>
+          <Tabs.Tab value="batches" leftSection={<IconPackage size={14} />}>Lots</Tabs.Tab>
+          <Tabs.Tab value="statistics" leftSection={<IconChartBar size={14} />}>Statistiques</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="overview" pt="xs">
           <Card shadow="sm" p="lg" radius="md" withBorder mt="md">
             <Grid>
-              <Grid.Col span={12} md={6}>
-                <Stack spacing="md">
+              <Grid.Col span={6}>
+                <Stack gap="md">
                   <Group>
                     <IconMapPin size={20} />
                     <Text>Emplacement: {farm.location}</Text>
@@ -255,19 +255,19 @@ export const FarmDetail: React.FC = () => {
                   )}
                 </Stack>
               </Grid.Col>
-              <Grid.Col span={12} md={6}>
+              <Grid.Col span={6}>
                 <Card shadow="xs" p="md" radius="md" withBorder>
                   <Title order={4}>Résumé</Title>
-                  <Stack spacing="xs" mt="md">
-                    <Group position="apart">
+                  <Stack gap="xs" mt="md">
+                    <Group justify="space-between">
                       <Text>Nombre de lots:</Text>
                       <Badge size="lg">{batches.length}</Badge>
                     </Group>
-                    <Group position="apart">
+                    <Group justify="space-between">
                       <Text>Classifications totales:</Text>
                       <Badge size="lg" color="blue">{farmStats?.total_classifications || 0}</Badge>
                     </Group>
-                    <Group position="apart">
+                    <Group justify="space-between">
                       <Text>Qualité moyenne:</Text>
                       <Badge 
                         size="lg" 
@@ -284,10 +284,10 @@ export const FarmDetail: React.FC = () => {
         </Tabs.Panel>
 
         <Tabs.Panel value="batches" pt="xs">
-          <Group position="apart" mb="md">
+          <Group justify="space-between" mb="md">
             <Title order={3}>Lots de prunes</Title>
             <Button 
-              leftIcon={<IconPackage size={16} />} 
+              leftSection={<IconPackage size={16} />} 
               onClick={() => setIsCreateBatchModalOpen(true)}
             >
               Ajouter un lot
@@ -312,36 +312,36 @@ export const FarmDetail: React.FC = () => {
             <Title order={3} mb="md">Statistiques de la ferme</Title>
             
             {!farmStats ? (
-              <Text align="center" color="dimmed">
+              <Text ta="center" c="dimmed">
                 Aucune statistique disponible pour cette ferme
               </Text>
             ) : (
               <Grid>
-                <Grid.Col span={12} md={6}>
+                <Grid.Col span={6}>
                   <Card shadow="xs" p="md" radius="md" withBorder>
                     <Title order={4}>Distribution des classifications</Title>
                     {/* Ici, on pourrait ajouter un graphique de distribution */}
-                    <Stack spacing="xs" mt="md">
+                    <Stack gap="xs" mt="md">
                       {farmStats.class_percentages && Object.entries(farmStats.class_percentages).map(([className, percentage]: [string, any]) => (
-                        <Group position="apart" key={className}>
+                        <Group justify="space-between" key={className}>
                           <Text>{className}:</Text>
-                          <Text weight={500}>{percentage}%</Text>
+                          <Text fw={500}>{percentage}%</Text>
                         </Group>
                       ))}
                     </Stack>
                   </Card>
                 </Grid.Col>
-                <Grid.Col span={12} md={6}>
+                <Grid.Col span={6}>
                   <Card shadow="xs" p="md" radius="md" withBorder>
                     <Title order={4}>Tendances</Title>
-                    <Stack spacing="xs" mt="md">
-                      <Group position="apart">
+                    <Stack gap="xs" mt="md">
+                      <Group justify="space-between">
                         <Text>Confiance moyenne:</Text>
-                        <Text weight={500}>{farmStats.average_confidence?.toFixed(2) || 'N/A'}</Text>
+                        <Text fw={500}>{farmStats.average_confidence?.toFixed(2) || 'N/A'}</Text>
                       </Group>
-                      <Group position="apart">
+                      <Group justify="space-between">
                         <Text>Dernière classification:</Text>
-                        <Text weight={500}>
+                        <Text fw={500}>
                           {farmStats.last_classification_date 
                             ? new Date(farmStats.last_classification_date).toLocaleDateString() 
                             : 'Jamais'}
@@ -381,7 +381,7 @@ export const FarmDetail: React.FC = () => {
         <Text mb="md">
           Êtes-vous sûr de vouloir supprimer la ferme "{farm.name}" ? Cette action est irréversible et supprimera également tous les lots associés.
         </Text>
-        <Group position="right">
+        <Group justify="flex-end">
           <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
             Annuler
           </Button>

@@ -1,4 +1,4 @@
-import { Classification } from '../types';
+import { PlumClassification } from '../types';
 import api from './api';
 
 // Service pour la gestion des classifications

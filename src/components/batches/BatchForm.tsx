@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, TextInput, Textarea, NumberInput, Group, Stack, Box, Select, DatePicker } from '@mantine/core';
+import { Button, TextInput, Textarea, NumberInput, Group, Stack, Box, Select } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 import { notifications } from '../../utils/notifications';
 
 // Schéma de validation pour le formulaire
@@ -71,9 +72,12 @@ export const BatchForm: React.FC<BatchFormProps> = ({
     }
   };
 
+  // Extraire les propriétés du register pour quantity
+  const quantityRegister = register('quantity', { valueAsNumber: true });
+
   return (
     <Box component="form" onSubmit={handleSubmit(handleFormSubmit)}>
-      <Stack spacing="md">
+      <Stack gap="md">
         <TextInput
           label="Nom du lot"
           placeholder="Entrez le nom du lot"
@@ -82,7 +86,7 @@ export const BatchForm: React.FC<BatchFormProps> = ({
           error={errors.name?.message}
         />
 
-        <DatePicker
+        <DateInput
           label="Date de récolte"
           placeholder="Sélectionnez la date de récolte"
           value={batch?.harvest_date ? new Date(batch.harvest_date) : null}
@@ -93,12 +97,13 @@ export const BatchForm: React.FC<BatchFormProps> = ({
         <NumberInput
           label="Quantité (kg)"
           placeholder="Entrez la quantité en kilogrammes"
-          min={0}
-          precision={2}
+          decimalScale={2}
           step={0.5}
-          {...register('quantity', { valueAsNumber: true })}
+          name={quantityRegister.name}
+          onBlur={quantityRegister.onBlur}
+          ref={quantityRegister.ref}
           error={errors.quantity?.message}
-          onChange={(value) => setValue('quantity', value as number)}
+          onChange={(value) => setValue('quantity', Number(value))}
         />
 
         <TextInput
@@ -132,7 +137,7 @@ export const BatchForm: React.FC<BatchFormProps> = ({
           error={errors.description?.message}
         />
 
-        <Group position="right" mt="md">
+        <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={onCancel}>
             Annuler
           </Button>

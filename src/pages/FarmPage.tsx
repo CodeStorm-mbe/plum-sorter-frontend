@@ -1,11 +1,11 @@
-// FarmPage.tsx - Page pour la gestion des fermes
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Plus, Edit, Trash2, MapPin, Info, BarChart } from "lucide-react";
 import Navbar from "../components/Navbar";
 import PageTransition from "../components/PageTransition";
-import { FarmService, Farm } from "../services";
+import { FarmService} from "../services";
+import { Farm } from "../types";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
@@ -89,9 +89,9 @@ const FarmPage = () => {
         description: farm.description,
         location: farm.location,
         size: farm.size || 0,
-        geo_coordinates: farm.geo_coordinates || {
-          latitude: 0,
-          longitude: 0,
+        geo_coordinates: {
+          latitude: farm.latitude || 0,
+          longitude: farm.longitude || 0,
         },
       });
     } else {
@@ -428,10 +428,9 @@ const FarmPage = () => {
               </Button>
               <Button
                 type="button"
-                variant="destructive"
                 onClick={handleDelete}
-                disabled={isLoading}
                 className="bg-red-500 hover:bg-red-600"
+                disabled={isLoading}
               >
                 {isLoading ? <LoadingSpinner size="sm" /> : "Supprimer"}
               </Button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useDashboard } from '../contexts/DashboardContext';
 import { Card, Grid, Text, Title, Group, Badge, Loader, Alert, Button, Stack } from '@mantine/core';
@@ -10,11 +10,12 @@ import { AdminStats } from '../components/dashboard/AdminStats';
 import { FarmerStats } from '../components/dashboard/FarmerStats';
 import { TechnicianStats } from '../components/dashboard/TechnicianStats';
 import { SystemPerformance } from '../components/dashboard/SystemPerformance';
+import { AdminDashboardData, FarmerDashboardData, TechnicianDashboardData } from '../services/dashboardService';
 
 const DashboardHome = () => {
   const { user } = useAuth();
   const { dashboardData, isLoading, error, refreshData, lastUpdated } = useDashboard();
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = React.useState(false);
 
   // Fonction pour rafraîchir les données
   const handleRefresh = async () => {
@@ -81,16 +82,16 @@ const DashboardHome = () => {
   }
 
   return (
-    <Stack spacing="lg">
-      <Group position="apart">
+    <Stack gap="lg">
+      <Group justify="space-between">
         <div>
           <Title order={2}>Tableau de bord</Title>
-          <Text color="dimmed" size="sm">
+          <Text c="dimmed" size="sm">
             Bienvenue, {user?.username} | Dernière mise à jour : {formatLastUpdated()}
           </Text>
         </div>
         <Button 
-          leftIcon={<IconRefresh size={16} />} 
+          leftSection={<IconRefresh size={16} />} 
           onClick={handleRefresh}
           loading={refreshing}
         >
@@ -99,10 +100,10 @@ const DashboardHome = () => {
       </Group>
 
       <Grid>
-        <Grid.Col span={12} md={8}>
+        <Grid.Col span={8}>
           <Card shadow="sm" p="lg" radius="md" withBorder>
             <Card.Section withBorder inheritPadding py="xs">
-              <Group position="apart">
+              <Group justify="space-between">
                 <Title order={3}>Distribution des classifications</Title>
                 <Badge color="blue" variant="light">
                   Total: {dashboardData.totalClassifications}
@@ -116,7 +117,7 @@ const DashboardHome = () => {
                   height={300}
                 />
               ) : (
-                <Text align="center" color="dimmed" py="xl">
+                <Text ta="center" c="dimmed" py="xl">
                   Aucune classification disponible
                 </Text>
               )}
@@ -124,23 +125,23 @@ const DashboardHome = () => {
           </Card>
         </Grid.Col>
 
-        <Grid.Col span={12} md={4}>
-          {user?.role === 'admin' && dashboardData.systemPerformance && (
-            <SystemPerformance data={dashboardData.systemPerformance} />
+        <Grid.Col span={4}>
+          {user?.role === 'admin' && (dashboardData as AdminDashboardData).systemPerformance && (
+            <SystemPerformance data={(dashboardData as AdminDashboardData).systemPerformance} />
           )}
           
           {user?.role === 'farmer' && (
             <FarmerStats 
-              totalBatches={dashboardData.totalBatches} 
-              pendingBatches={dashboardData.pendingBatches}
-              farms={dashboardData.farms?.length || 0}
+              totalBatches={(dashboardData as FarmerDashboardData).totalBatches || 0} 
+              pendingBatches={(dashboardData as FarmerDashboardData).pendingBatches || 0}
+              farms={(dashboardData as FarmerDashboardData).farms?.length || 0}
             />
           )}
           
           {user?.role === 'technician' && (
             <TechnicianStats 
-              managedFarms={dashboardData.managedFarms} 
-              farmPerformance={dashboardData.farmPerformance}
+              managedFarms={(dashboardData as TechnicianDashboardData).managedFarms || 0} 
+              farmPerformance={(dashboardData as TechnicianDashboardData).farmPerformance || []}
             />
           )}
         </Grid.Col>
@@ -149,9 +150,9 @@ const DashboardHome = () => {
       {/* Section spécifique au rôle Admin */}
       {user?.role === 'admin' && (
         <AdminStats 
-          totalUsers={dashboardData.totalUsers} 
-          usersByRole={dashboardData.usersByRole} 
-          activeUsers={dashboardData.activeUsers}
+          totalUsers={(dashboardData as AdminDashboardData).totalUsers || 0} 
+          usersByRole={(dashboardData as AdminDashboardData).usersByRole || {}} 
+          activeUsers={(dashboardData as AdminDashboardData).activeUsers || 0}
         />
       )}
 

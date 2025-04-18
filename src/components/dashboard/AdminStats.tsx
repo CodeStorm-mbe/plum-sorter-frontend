@@ -19,12 +19,12 @@ export const AdminStats: React.FC<AdminStatsProps> = ({ totalUsers, usersByRole,
       </Card.Section>
       <Card.Section p="lg">
         <Grid>
-          <Grid.Col span={12} md={4}>
-            <Group position="center" direction="column" spacing="xs">
+          <Grid.Col span={4}>
+            <Group justify="center" align="center" gap="xs">
               <IconUsers size={32} color="#228be6" />
               <Title order={4}>Utilisateurs totaux</Title>
-              <Text size="xl" weight={700}>{totalUsers}</Text>
-              <Group spacing="xs">
+              <Text size="xl" fw={700}>{totalUsers}</Text>
+              <Group gap="xs">
                 <Badge color="blue">Admin: {usersByRole.admin || 0}</Badge>
                 <Badge color="green">Techniciens: {usersByRole.technician || 0}</Badge>
                 <Badge color="orange">Agriculteurs: {usersByRole.farmer || 0}</Badge>
@@ -32,21 +32,21 @@ export const AdminStats: React.FC<AdminStatsProps> = ({ totalUsers, usersByRole,
             </Group>
           </Grid.Col>
           
-          <Grid.Col span={12} md={4}>
-            <Group position="center" direction="column" spacing="xs">
+          <Grid.Col span={4}>
+            <Group justify="center" align="center" gap="xs">
               <IconUserCheck size={32} color="#40c057" />
               <Title order={4}>Utilisateurs actifs</Title>
-              <Text size="xl" weight={700}>{activeUsers}</Text>
-              <Text size="sm" color="dimmed">Derniers 30 jours</Text>
+              <Text size="xl" fw={700}>{activeUsers}</Text>
+              <Text size="sm" c="dimmed">Derniers 30 jours</Text>
             </Group>
           </Grid.Col>
           
-          <Grid.Col span={12} md={4}>
-            <Group position="center" direction="column" spacing="xs">
+          <Grid.Col span={4}>
+            <Group justify="center" align="center" gap="xs">
               <RingProgress
                 sections={[{ value: activePercentage, color: 'blue' }]}
                 label={
-                  <Text size="xl" weight={700} align="center">
+                  <Text size="xl" fw={700} ta="center">
                     {activePercentage}%
                   </Text>
                 }

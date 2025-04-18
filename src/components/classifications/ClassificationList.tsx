@@ -14,7 +14,7 @@ import {
 } from '@mantine/core';
 import { IconDotsVertical, IconTrash, IconEye, IconDownload } from '@tabler/icons-react';
 import { notifications } from '../../utils/notifications';
-import { classificationService } from '../../services';
+import { ClassificationService } from '../../services';
 
 interface ClassificationListProps {
   classifications: any[];
@@ -37,7 +37,7 @@ export const ClassificationList: React.FC<ClassificationListProps> = ({
     
     try {
       setIsSubmitting(true);
-      await classificationService.deleteClassification(selectedClassification.id);
+      await ClassificationService.deleteClassification(selectedClassification.id);
       notifications.show({
         title: 'Succès',
         message: 'Classification supprimée avec succès',
@@ -73,7 +73,7 @@ export const ClassificationList: React.FC<ClassificationListProps> = ({
   if (classifications.length === 0) {
     return (
       <Card shadow="sm" p="lg" radius="md" withBorder>
-        <Text align="center" color="dimmed">
+        <Text ta="center" c="dimmed">
           Aucune classification disponible. Ajoutez une classification pour commencer.
         </Text>
       </Card>
@@ -84,19 +84,20 @@ export const ClassificationList: React.FC<ClassificationListProps> = ({
     <>
       <Grid>
         {classifications.map((classification) => (
-          <Grid.Col key={classification.id} span={12} sm={6} md={4} lg={3}>
+          <Grid.Col key={classification.id} span={3}>
             <Card shadow="sm" p="md" radius="md" withBorder>
               <Card.Section>
-                <Image
-                  src={classification.image_url || '/placeholder-plum.jpg'}
-                  height={160}
-                  alt={`Classification ${classification.id}`}
-                  withPlaceholder
-                  placeholder={<Text align="center">Image non disponible</Text>}
-                />
+                <div style={{ textAlign: 'center', height: 160 }}>
+                  <Image
+                    src={classification.image_url || '/placeholder-plum.jpg'}
+                    height={160}
+                    alt={`Classification ${classification.id}`}
+                    fallbackSrc="/placeholder-plum.jpg"
+                  />
+                </div>
               </Card.Section>
 
-              <Group position="apart" mt="md" mb="xs">
+              <Group justify="space-between" mt="md" mb="xs">
                 <Badge color={getClassColor(classification.class_name)} size="lg">
                   {classification.class_name}
                 </Badge>
@@ -108,7 +109,7 @@ export const ClassificationList: React.FC<ClassificationListProps> = ({
                   </Menu.Target>
                   <Menu.Dropdown>
                     <Menu.Item 
-                      icon={<IconEye size={16} />} 
+                      leftSection={<IconEye size={16} />} 
                       onClick={() => {
                         setSelectedClassification(classification);
                         setIsViewModalOpen(true);
@@ -118,7 +119,7 @@ export const ClassificationList: React.FC<ClassificationListProps> = ({
                     </Menu.Item>
                     {classification.image_url && (
                       <Menu.Item 
-                        icon={<IconDownload size={16} />} 
+                        leftSection={<IconDownload size={16} />} 
                         component="a"
                         href={classification.image_url}
                         download
@@ -128,7 +129,7 @@ export const ClassificationList: React.FC<ClassificationListProps> = ({
                       </Menu.Item>
                     )}
                     <Menu.Item 
-                      icon={<IconTrash size={16} />} 
+                      leftSection={<IconTrash size={16} />} 
                       color="red"
                       onClick={() => {
                         setSelectedClassification(classification);
@@ -141,15 +142,15 @@ export const ClassificationList: React.FC<ClassificationListProps> = ({
                 </Menu>
               </Group>
 
-              <Stack spacing={5}>
-                <Text size="sm" color="dimmed">
+              <Stack gap={5}>
+                <Text size="sm" c="dimmed">
                   Confiance: {(classification.confidence_score * 100).toFixed(1)}%
                 </Text>
-                <Text size="sm" color="dimmed">
+                <Text size="sm" c="dimmed">
                   Date: {new Date(classification.created_at).toLocaleString()}
                 </Text>
                 {classification.batch && (
-                  <Text size="sm" color="dimmed">
+                  <Text size="sm" c="dimmed">
                     Lot: {classification.batch.name}
                   </Text>
                 )}
@@ -169,7 +170,7 @@ export const ClassificationList: React.FC<ClassificationListProps> = ({
         <Text mb="md">
           Êtes-vous sûr de vouloir supprimer cette classification ? Cette action est irréversible.
         </Text>
-        <Group position="right">
+        <Group justify="flex-end">
           <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
             Annuler
           </Button>
@@ -187,58 +188,59 @@ export const ClassificationList: React.FC<ClassificationListProps> = ({
         size="lg"
       >
         {selectedClassification && (
-          <Stack spacing="md">
-            <Image
-              src={selectedClassification.image_url || '/placeholder-plum.jpg'}
-              height={300}
-              fit="contain"
-              alt={`Classification ${selectedClassification.id}`}
-              withPlaceholder
-              placeholder={<Text align="center">Image non disponible</Text>}
-            />
+          <Stack gap="md">
+            <div style={{ textAlign: 'center' }}>
+              <Image
+                src={selectedClassification.image_url || '/placeholder-plum.jpg'}
+                height={300}
+                fit="contain"
+                alt={`Classification ${selectedClassification.id}`}
+                fallbackSrc="/placeholder-plum.jpg"
+              />
+            </div>
             
-            <Group position="center">
+            <Group justify="center">
               <Badge color={getClassColor(selectedClassification.class_name)} size="xl">
                 {selectedClassification.class_name}
               </Badge>
             </Group>
             
             <Card shadow="xs" p="md" withBorder>
-              <Stack spacing="xs">
-                <Group position="apart">
-                  <Text weight={500}>Confiance:</Text>
+              <Stack gap="xs">
+                <Group justify="space-between">
+                  <Text fw={500}>Confiance:</Text>
                   <Text>{(selectedClassification.confidence_score * 100).toFixed(1)}%</Text>
                 </Group>
                 
-                <Group position="apart">
-                  <Text weight={500}>Date:</Text>
+                <Group justify="space-between">
+                  <Text fw={500}>Date:</Text>
                   <Text>{new Date(selectedClassification.created_at).toLocaleString()}</Text>
                 </Group>
                 
                 {selectedClassification.batch && (
-                  <Group position="apart">
-                    <Text weight={500}>Lot:</Text>
+                  <Group justify="space-between">
+                    <Text fw={500}>Lot:</Text>
                     <Text>{selectedClassification.batch.name}</Text>
                   </Group>
                 )}
                 
                 {selectedClassification.farm && (
-                  <Group position="apart">
-                    <Text weight={500}>Ferme:</Text>
+                  <Group justify="space-between">
+                    <Text fw={500}>Ferme:</Text>
                     <Text>{selectedClassification.farm.name}</Text>
                   </Group>
                 )}
                 
                 {selectedClassification.model_version && (
-                  <Group position="apart">
-                    <Text weight={500}>Version du modèle:</Text>
+                  <Group justify="space-between">
+                    <Text fw={500}>Version du modèle:</Text>
                     <Text>{selectedClassification.model_version}</Text>
                   </Group>
                 )}
                 
                 {selectedClassification.processing_time && (
-                  <Group position="apart">
-                    <Text weight={500}>Temps de traitement:</Text>
+                  <Group justify="space-between">
+                    <Text fw={500}>Temps de traitement:</Text>
                     <Text>{selectedClassification.processing_time.toFixed(2)} secondes</Text>
                   </Group>
                 )}
@@ -247,10 +249,10 @@ export const ClassificationList: React.FC<ClassificationListProps> = ({
             
             {selectedClassification.class_probabilities && (
               <Card shadow="xs" p="md" withBorder>
-                <Text weight={500} mb="xs">Probabilités par classe:</Text>
-                <Stack spacing="xs">
+                <Text fw={500} mb="xs">Probabilités par classe:</Text>
+                <Stack gap="xs">
                   {Object.entries(selectedClassification.class_probabilities).map(([className, probability]: [string, any]) => (
-                    <Group position="apart" key={className}>
+                    <Group justify="space-between" key={className}>
                       <Text>{className}:</Text>
                       <Text>{(probability * 100).toFixed(1)}%</Text>
                     </Group>

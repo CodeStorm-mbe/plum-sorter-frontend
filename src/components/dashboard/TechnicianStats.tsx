@@ -22,13 +22,13 @@ export const TechnicianStats: React.FC<TechnicianStatsProps> = ({ managedFarms, 
         <Title order={3}>Statistiques du technicien</Title>
       </Card.Section>
       <Card.Section p="lg">
-        <Stack spacing="md">
-          <Group position="apart">
+        <Stack gap="md">
+          <Group justify="space-between">
             <Group>
               <IconBuildingFactory2 size={24} color="#228be6" />
               <div>
                 <Text>Fermes gérées</Text>
-                <Text weight={700} size="lg">{managedFarms}</Text>
+                <Text fw={700} size="lg">{managedFarms}</Text>
               </div>
             </Group>
             <Badge color="blue" size="lg">Supervision active</Badge>
@@ -36,25 +36,27 @@ export const TechnicianStats: React.FC<TechnicianStatsProps> = ({ managedFarms, 
 
           {topFarm && (
             <div>
-              <Group position="apart" mb="xs">
-                <Text weight={500}>Ferme la plus active</Text>
+              <Group justify="space-between" mb="xs">
+                <Text fw={500}>Ferme la plus active</Text>
                 <Badge color="green">{topFarm.name}</Badge>
               </Group>
               <Progress 
                 value={100} 
                 color="green" 
-                label={`${topFarm.total_classifications} classifications`} 
                 size="xl" 
               />
+              <Text size="sm" ta="center" mt="xs">
+                {topFarm.total_classifications} classifications
+              </Text>
             </div>
           )}
 
-          <Group position="apart">
+          <Group justify="space-between">
             <Group>
               <IconChartBar size={24} color="#40c057" />
               <div>
                 <Text>Performance moyenne</Text>
-                <Text weight={700} size="lg">
+                <Text fw={700} size="lg">
                   {farmPerformance && farmPerformance.length > 0 
                     ? `${Math.round(farmPerformance.reduce((sum, farm) => 
                         sum + (farm.class_percentages?.['Bonne qualité'] || 0), 0) / farmPerformance.length)}%`

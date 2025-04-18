@@ -29,7 +29,7 @@ import { notifications } from '../../utils/notifications';
 import { BatchForm } from './BatchForm';
 import { ClassificationForm } from '../classifications/ClassificationForm';
 import { ClassificationList } from '../classifications/ClassificationList';
-import { batchService, classificationService } from '../../services';
+import { BatchService, ClassificationService } from '../../services';
 
 export const BatchDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -58,7 +58,7 @@ export const BatchDetail: React.FC = () => {
   const loadBatch = async () => {
     try {
       setIsLoading(true);
-      const data = await batchService.getBatch(batchId);
+      const data = await BatchService.getBatch(batchId);
       setBatch(data);
     } catch (error: any) {
       notifications.show({
@@ -76,7 +76,7 @@ export const BatchDetail: React.FC = () => {
   const loadClassifications = async () => {
     try {
       setClassificationsLoading(true);
-      const data = await batchService.getBatchClassifications(batchId);
+      const data = await BatchService.getBatchClassifications(batchId);
       setClassifications(data.results || []);
     } catch (error: any) {
       console.error('Erreur lors du chargement des classifications:', error);
@@ -90,7 +90,7 @@ export const BatchDetail: React.FC = () => {
   const handleUpdateBatch = async (data: any) => {
     try {
       setIsSubmitting(true);
-      await batchService.updateBatch(batchId, data);
+      await BatchService.updateBatch(batchId, data);
       notifications.show({
         title: 'Succès',
         message: 'Lot mis à jour avec succès',
@@ -113,7 +113,7 @@ export const BatchDetail: React.FC = () => {
   const handleDeleteBatch = async () => {
     try {
       setIsSubmitting(true);
-      await batchService.deleteBatch(batchId);
+      await BatchService.deleteBatch(batchId);
       notifications.show({
         title: 'Succès',
         message: 'Lot supprimé avec succès',
@@ -148,7 +148,7 @@ export const BatchDetail: React.FC = () => {
         formData.append('use_tta', 'true');
       }
       
-      await classificationService.classifyImage(formData);
+      await ClassificationService.classifyImage(formData);
       
       notifications.show({
         title: 'Succès',
@@ -212,11 +212,11 @@ export const BatchDetail: React.FC = () => {
   if (!batch) {
     return (
       <Card shadow="sm" p="lg" radius="md" withBorder>
-        <Text align="center" color="dimmed">
+        <Text ta="center" c="dimmed">
           Lot non trouvé
         </Text>
         <Button 
-          leftIcon={<IconArrowLeft size={16} />} 
+          leftSection={<IconArrowLeft size={16} />} 
           onClick={() => navigate('/batches')}
           mt="md"
           variant="outline"
@@ -229,7 +229,7 @@ export const BatchDetail: React.FC = () => {
 
   return (
     <>
-      <Group position="apart" mb="md">
+      <Group justify="space-between" mb="md">
         <Group>
           <ActionIcon size="lg" variant="light" onClick={() => navigate(-1)}>
             <IconArrowLeft size={20} />
@@ -240,14 +240,14 @@ export const BatchDetail: React.FC = () => {
           <Button 
             variant="filled" 
             color="green" 
-            leftIcon={<IconPhoto size={16} />} 
+            leftSection={<IconPhoto size={16} />} 
             onClick={() => setIsClassifyModalOpen(true)}
           >
             Classifier
           </Button>
           <Button 
             variant="outline" 
-            leftIcon={<IconEdit size={16} />} 
+            leftSection={<IconEdit size={16} />} 
             onClick={() => setIsEditModalOpen(true)}
           >
             Modifier
@@ -255,7 +255,7 @@ export const BatchDetail: React.FC = () => {
           <Button 
             variant="filled" 
             color="red" 
-            leftIcon={<IconTrash size={16} />} 
+            leftSection={<IconTrash size={16} />} 
             onClick={() => setIsDeleteModalOpen(true)}
           >
             Supprimer
@@ -263,18 +263,18 @@ export const BatchDetail: React.FC = () => {
         </Group>
       </Group>
 
-      <Tabs value={activeTab} onTabChange={setActiveTab}>
+      <Tabs value={activeTab} onChange={setActiveTab}>
         <Tabs.List>
-          <Tabs.Tab value="overview" icon={<IconPackage size={14} />}>Vue d'ensemble</Tabs.Tab>
-          <Tabs.Tab value="classifications" icon={<IconPhoto size={14} />}>Classifications</Tabs.Tab>
-          <Tabs.Tab value="statistics" icon={<IconChartBar size={14} />}>Statistiques</Tabs.Tab>
+          <Tabs.Tab value="overview" leftSection={<IconPackage size={14} />}>Vue d'ensemble</Tabs.Tab>
+          <Tabs.Tab value="classifications" leftSection={<IconPhoto size={14} />}>Classifications</Tabs.Tab>
+          <Tabs.Tab value="statistics" leftSection={<IconChartBar size={14} />}>Statistiques</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="overview" pt="xs">
           <Card shadow="sm" p="lg" radius="md" withBorder mt="md">
             <Grid>
-              <Grid.Col span={12} md={6}>
-                <Stack spacing="md">
+              <Grid.Col span={6}>
+                <Stack gap="md">
                   <Group>
                     <IconCalendar size={20} />
                     <Text>
@@ -302,22 +302,22 @@ export const BatchDetail: React.FC = () => {
                   )}
                 </Stack>
               </Grid.Col>
-              <Grid.Col span={12} md={6}>
+              <Grid.Col span={6}>
                 <Card shadow="xs" p="md" radius="md" withBorder>
                   <Title order={4}>Résumé</Title>
-                  <Stack spacing="xs" mt="md">
-                    <Group position="apart">
+                  <Stack gap="xs" mt="md">
+                    <Group justify="space-between">
                       <Text>Statut:</Text>
                       <Badge size="lg" color={getStatusColor(batch.status)}>
                         {getStatusLabel(batch.status)}
                       </Badge>
                     </Group>
-                    <Group position="apart">
+                    <Group justify="space-between">
                       <Text>Classifications:</Text>
                       <Badge size="lg" color="blue">{classifications.length}</Badge>
                     </Group>
                     {batch.classification_summary && (
-                      <Group position="apart">
+                      <Group justify="space-between">
                         <Text>Qualité moyenne:</Text>
                         <Badge 
                           size="lg" 
@@ -335,10 +335,10 @@ export const BatchDetail: React.FC = () => {
         </Tabs.Panel>
 
         <Tabs.Panel value="classifications" pt="xs">
-          <Group position="apart" mb="md">
+          <Group justify="space-between" mb="md">
             <Title order={3}>Classifications</Title>
             <Button 
-              leftIcon={<IconPhoto size={16} />} 
+              leftSection={<IconPhoto size={16} />} 
               onClick={() => setIsClassifyModalOpen(true)}
             >
               Nouvelle classification
@@ -361,40 +361,40 @@ export const BatchDetail: React.FC = () => {
             <Title order={3} mb="md">Statistiques du lot</Title>
             
             {!batch.classification_summary ? (
-              <Text align="center" color="dimmed">
+              <Text ta="center" c="dimmed">
                 Aucune statistique disponible pour ce lot. Ajoutez des classifications pour générer des statistiques.
               </Text>
             ) : (
               <Grid>
-                <Grid.Col span={12} md={6}>
+                <Grid.Col span={6}>
                   <Card shadow="xs" p="md" radius="md" withBorder>
                     <Title order={4}>Distribution des classifications</Title>
                     {/* Ici, on pourrait ajouter un graphique de distribution */}
-                    <Stack spacing="xs" mt="md">
+                    <Stack gap="xs" mt="md">
                       {batch.classification_summary.class_distribution && 
                         Object.entries(batch.classification_summary.class_distribution).map(([className, count]: [string, any]) => (
-                          <Group position="apart" key={className}>
+                          <Group justify="space-between" key={className}>
                             <Text>{className}:</Text>
-                            <Text weight={500}>{count}</Text>
+                            <Text fw={500}>{count}</Text>
                           </Group>
                         ))
                       }
                     </Stack>
                   </Card>
                 </Grid.Col>
-                <Grid.Col span={12} md={6}>
+                <Grid.Col span={6}>
                   <Card shadow="xs" p="md" radius="md" withBorder>
                     <Title order={4}>Métriques</Title>
-                    <Stack spacing="xs" mt="md">
-                      <Group position="apart">
+                    <Stack gap="xs" mt="md">
+                      <Group justify="space-between">
                         <Text>Confiance moyenne:</Text>
-                        <Text weight={500}>
+                        <Text fw={500}>
                           {batch.classification_summary.average_confidence?.toFixed(2) || 'N/A'}
                         </Text>
                       </Group>
-                      <Group position="apart">
+                      <Group justify="space-between">
                         <Text>Dernière classification:</Text>
-                        <Text weight={500}>
+                        <Text fw={500}>
                           {batch.classification_summary.last_classification_date 
                             ? new Date(batch.classification_summary.last_classification_date).toLocaleDateString() 
                             : 'Jamais'}
@@ -435,7 +435,7 @@ export const BatchDetail: React.FC = () => {
         <Text mb="md">
           Êtes-vous sûr de vouloir supprimer le lot "{batch.name}" ? Cette action est irréversible et supprimera également toutes les classifications associées.
         </Text>
-        <Group position="right">
+        <Group justify="flex-end">
           <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
             Annuler
           </Button>

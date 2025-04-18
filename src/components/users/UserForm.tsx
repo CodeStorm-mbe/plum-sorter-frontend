@@ -104,7 +104,7 @@ export const UserForm: React.FC<UserFormProps> = ({
 
   return (
     <Box component="form" onSubmit={handleSubmit(handleFormSubmit)}>
-      <Stack spacing="md">
+      <Stack gap="md">
         <TextInput
           label="Nom d'utilisateur"
           placeholder="Entrez le nom d'utilisateur"
@@ -189,7 +189,7 @@ export const UserForm: React.FC<UserFormProps> = ({
           </>
         )}
 
-        <Group position="right" mt="md">
+        <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={onCancel}>
             Annuler
           </Button>

@@ -1,4 +1,4 @@
-import { Batch } from '../types';
+import { PlumBatch } from '../types';
 import api from './api';
 
 // Service pour la gestion des lots de prunes
@@ -26,7 +26,7 @@ class BatchService {
   }
 
   // Créer un nouveau lot
-  static async createBatch(batchData: Partial<Batch>) {
+  static async createBatch(batchData: Partial<PlumBatch>) {
     try {
       const response = await api.post('batches/', batchData);
       return response.data;
@@ -37,7 +37,7 @@ class BatchService {
   }
 
   // Mettre à jour un lot existant
-  static async updateBatch(id: number, batchData: Partial<Batch>) {
+  static async updateBatch(id: number, batchData: Partial<PlumBatch>) {
     try {
       const response = await api.patch(`batches/${id}/`, batchData);
       return response.data;

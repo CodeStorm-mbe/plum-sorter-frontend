@@ -8,7 +8,7 @@ interface RecentClassificationsProps {
 export const RecentClassifications: React.FC<RecentClassificationsProps> = ({ classifications }) => {
   // Si aucune classification, afficher un message
   if (!classifications || classifications.length === 0) {
-    return <Text align="center">Aucune classification récente</Text>;
+    return <Text ta="center">Aucune classification récente</Text>;
   }
 
   // Fonction pour déterminer la couleur du badge selon la classe

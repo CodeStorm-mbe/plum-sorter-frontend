@@ -4,7 +4,7 @@ import { IconDotsVertical, IconEdit, IconTrash, IconEye, IconPhoto } from '@tabl
 import { useNavigate } from 'react-router-dom';
 import { notifications } from '../../utils/notifications';
 import { BatchForm } from './BatchForm';
-import { batchService } from '../../services';
+import { BatchService } from '../../services';
 
 interface BatchListProps {
   batches: any[];
@@ -33,7 +33,7 @@ export const BatchList: React.FC<BatchListProps> = ({
     
     try {
       setIsSubmitting(true);
-      await batchService.updateBatch(selectedBatch.id, data);
+      await BatchService.updateBatch(selectedBatch.id, data);
       notifications.show({
         title: 'Succès',
         message: 'Lot mis à jour avec succès',
@@ -58,7 +58,7 @@ export const BatchList: React.FC<BatchListProps> = ({
     
     try {
       setIsSubmitting(true);
-      await batchService.deleteBatch(selectedBatch.id);
+      await BatchService.deleteBatch(selectedBatch.id);
       notifications.show({
         title: 'Succès',
         message: 'Lot supprimé avec succès',
@@ -122,7 +122,7 @@ export const BatchList: React.FC<BatchListProps> = ({
   if (batches.length === 0) {
     return (
       <Card shadow="sm" p="lg" radius="md" withBorder>
-        <Text align="center" color="dimmed">
+        <Text ta="center" c="dimmed">
           Aucun lot disponible pour cette ferme. Ajoutez un lot pour commencer.
         </Text>
       </Card>
@@ -133,11 +133,11 @@ export const BatchList: React.FC<BatchListProps> = ({
     <>
       <Grid>
         {batches.map((batch) => (
-          <Grid.Col key={batch.id} span={12} md={6} lg={4}>
+          <Grid.Col key={batch.id} span={4}>
             <Card shadow="sm" p="lg" radius="md" withBorder>
               <Card.Section withBorder inheritPadding py="xs">
-                <Group position="apart">
-                  <Text weight={500}>{batch.name}</Text>
+                <Group justify="space-between">
+                  <Text fw={500}>{batch.name}</Text>
                   <Menu withinPortal position="bottom-end" shadow="sm">
                     <Menu.Target>
                       <ActionIcon>
@@ -146,19 +146,19 @@ export const BatchList: React.FC<BatchListProps> = ({
                     </Menu.Target>
                     <Menu.Dropdown>
                       <Menu.Item 
-                        icon={<IconEye size={16} />} 
+                        leftSection={<IconEye size={16} />} 
                         onClick={() => handleViewBatch(batch.id)}
                       >
                         Voir détails
                       </Menu.Item>
                       <Menu.Item 
-                        icon={<IconPhoto size={16} />} 
+                        leftSection={<IconPhoto size={16} />} 
                         onClick={() => handleClassifyBatch(batch.id)}
                       >
                         Classifier
                       </Menu.Item>
                       <Menu.Item 
-                        icon={<IconEdit size={16} />} 
+                        leftSection={<IconEdit size={16} />} 
                         onClick={() => {
                           setSelectedBatch(batch);
                           setIsEditModalOpen(true);
@@ -167,7 +167,7 @@ export const BatchList: React.FC<BatchListProps> = ({
                         Modifier
                       </Menu.Item>
                       <Menu.Item 
-                        icon={<IconTrash size={16} />} 
+                        leftSection={<IconTrash size={16} />} 
                         color="red"
                         onClick={() => {
                           setSelectedBatch(batch);
@@ -180,19 +180,19 @@ export const BatchList: React.FC<BatchListProps> = ({
                   </Menu>
                 </Group>
               </Card.Section>
-              <Stack spacing="xs" mt="md">
+              <Stack gap="xs" mt="md">
                 {batch.harvest_date && (
-                  <Text size="sm" color="dimmed">
+                  <Text size="sm" c="dimmed">
                     Récolté le: {new Date(batch.harvest_date).toLocaleDateString()}
                   </Text>
                 )}
                 {batch.quantity && (
-                  <Text size="sm" color="dimmed">Quantité: {batch.quantity} kg</Text>
+                  <Text size="sm" c="dimmed">Quantité: {batch.quantity} kg</Text>
                 )}
                 {batch.variety && (
-                  <Text size="sm" color="dimmed">Variété: {batch.variety}</Text>
+                  <Text size="sm" c="dimmed">Variété: {batch.variety}</Text>
                 )}
-                <Group position="apart" mt="md">
+                <Group justify="space-between" mt="md">
                   <Badge color={getStatusColor(batch.status)}>
                     {getStatusLabel(batch.status)}
                   </Badge>
@@ -200,11 +200,11 @@ export const BatchList: React.FC<BatchListProps> = ({
                     {batch.total_classifications || 0} classifications
                   </Badge>
                 </Group>
-                <Group position="right" mt="md">
+                <Group justify="flex-end" mt="md">
                   <Button 
                     variant="light" 
                     onClick={() => handleClassifyBatch(batch.id)}
-                    leftIcon={<IconPhoto size={16} />}
+                    leftSection={<IconPhoto size={16} />}
                   >
                     Classifier
                   </Button>
@@ -243,7 +243,7 @@ export const BatchList: React.FC<BatchListProps> = ({
         <Text mb="md">
           Êtes-vous sûr de vouloir supprimer le lot "{selectedBatch?.name}" ? Cette action est irréversible et supprimera également toutes les classifications associées.
         </Text>
-        <Group position="right">
+        <Group justify="flex-end">
           <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
             Annuler
           </Button>

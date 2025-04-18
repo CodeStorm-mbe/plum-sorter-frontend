@@ -6,7 +6,8 @@ import { Upload, ArrowLeft, Info, BarChart2 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import PageTransition from "../components/PageTransition";
 import ImageUpload from "../components/ImageUpload";
-import { BatchService, ClassificationService, FarmService, PlumBatch, Farm } from "../services";
+import { BatchService, ClassificationService, FarmService } from "../services";
+import { PlumBatch, Farm } from "../types";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Checkbox } from "../components/ui/checkbox";
@@ -34,11 +35,11 @@ const BatchClassificationPage = () => {
       
       try {
         setIsLoading(true);
-        const batchData = await BatchService.getBatchById(parseInt(batchId));
+        const batchData = await BatchService.getBatch(parseInt(batchId));
         setBatch(batchData);
         
         // Récupérer les informations de la ferme
-        const farmData = await FarmService.getFarmById(batchData.farm);
+        const farmData = await FarmService.getFarm(batchData.farm);
         setFarm(farmData);
       } catch (error) {
         console.error("Erreur lors de la récupération des données du lot:", error);
@@ -102,20 +103,28 @@ const BatchClassificationPage = () => {
 
   // Classifier les images
   const classifyImages = async () => {
-    if (!batch || !farm || files.length === 0) return;
+    if (!batch || !farm || files.length === 0 || !batchId) return;
     
     try {
       setIsProcessing(true);
       
-      const requestData = {
-        images: files,
-        farm_id: farm.id,
-        batch_id: batch.id,
-        use_tta: useTTA,
-        geo_location: useGeoLocation && geoLocation ? geoLocation : undefined,
-      };
+      // Créer un FormData pour l'envoi des fichiers
+      const formData = new FormData();
+      files.forEach(file => {
+        formData.append('images', file);
+      });
       
-      const result = await ClassificationService.classifyBatch(requestData);
+      // Ajouter les autres données
+      formData.append('farm_id', farm.id.toString());
+      formData.append('batch_id', batch.id.toString());
+      formData.append('use_tta', useTTA.toString());
+      
+      if (useGeoLocation && geoLocation) {
+        formData.append('latitude', geoLocation.latitude.toString());
+        formData.append('longitude', geoLocation.longitude.toString());
+      }
+      
+      const result = await ClassificationService.classifyBatch(batch.id, formData);
       
       toast({
         title: "Classification terminée",
@@ -194,7 +203,7 @@ const BatchClassificationPage = () => {
                         <p className="text-white/70 mb-4">{batch.description}</p>
                         <div className="text-sm text-white/60">
                           <p>Ferme: {farm?.name}</p>
-                          <p>Nombre d'images: {batch.classifications_count || 0}</p>
+                          <p>Nombre d'images: {batch.total_plums || 0}</p>
                         </div>
                       </div>
                       <div className="flex flex-col justify-center space-y-4">

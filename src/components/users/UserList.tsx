@@ -1,30 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  Text, 
-  Badge, 
-  Group, 
-  Stack, 
-  Grid, 
-  Avatar, 
-  ActionIcon, 
+import {
+  Card,
+  Text,
+  Badge,
+  Group,
+  Stack,
+  SimpleGrid,
+  Avatar,
+  ActionIcon,
   Menu,
   Modal,
   Button,
   TextInput,
-  Select
+  Select,
+  Flex,
+  Title,
 } from '@mantine/core';
 import { IconDotsVertical, IconEdit, IconTrash, IconSearch, IconFilter, IconUserPlus } from '@tabler/icons-react';
-import { notifications } from '../../utils/notifications';
-import { userService } from '../../services';
+import { notifications } from '@mantine/notifications';
+import UserService from "../../services/userService";
 import { UserForm } from './UserForm';
-import { User } from '../../types';
+import { User as AppUser } from '../../types';
+import { User as ApiUser } from '../../services/authService';
 
 export const UserList: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<AppUser[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<AppUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -32,13 +35,33 @@ export const UserList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string | null>(null);
 
-  // Charger les utilisateurs
+  // Load users
   const loadUsers = async () => {
     try {
       setIsLoading(true);
-      const response = await userService.getUsers();
-      setUsers(response.results || []);
-      setFilteredUsers(response.results || []);
+      const response = await UserService.getUsers();
+      
+      // Conversion des utilisateurs de l'API vers le format de l'application
+      const typedUsers = response.map(apiUser => {
+        // Créer un utilisateur compatible avec le type AppUser
+        const appUser: AppUser = {
+          id: apiUser.id,
+          username: apiUser.name, // Utiliser name comme username
+          email: apiUser.email,
+          first_name: apiUser.name.split(' ')[0] || '', // Extraire le prénom du nom complet
+          last_name: apiUser.name.split(' ').slice(1).join(' ') || '', // Extraire le nom de famille
+          role: apiUser.role,
+          is_active: apiUser.is_verified, // Utiliser is_verified comme is_active
+          date_joined: apiUser.created_at,
+          last_login: '',
+          name: apiUser.name,
+          avatar: apiUser.avatar
+        };
+        return appUser;
+      });
+      
+      setUsers(typedUsers);
+      setFilteredUsers(typedUsers);
     } catch (error: any) {
       notifications.show({
         title: 'Erreur',
@@ -50,108 +73,36 @@ export const UserList: React.FC = () => {
     }
   };
 
-  // Charger les utilisateurs au montage du composant
+  // Load users on component mount
   useEffect(() => {
     loadUsers();
   }, []);
 
-  // Filtrer les utilisateurs lorsque la recherche ou le filtre change
+  // Filter users when search or role filter changes
   useEffect(() => {
     let result = [...users];
-    
-    // Appliquer la recherche
+
+    // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(user => 
-        user.username.toLowerCase().includes(query) ||
-        user.email.toLowerCase().includes(query) ||
-        user.first_name.toLowerCase().includes(query) ||
-        user.last_name.toLowerCase().includes(query)
+      result = result.filter(
+        (user) =>
+          user.username.toLowerCase().includes(query) ||
+          user.email.toLowerCase().includes(query) ||
+          user.first_name.toLowerCase().includes(query) ||
+          user.last_name.toLowerCase().includes(query)
       );
     }
-    
-    // Appliquer le filtre de rôle
+
+    // Apply role filter
     if (roleFilter) {
-      result = result.filter(user => user.role === roleFilter);
+      result = result.filter((user) => user.role === roleFilter);
     }
-    
+
     setFilteredUsers(result);
   }, [users, searchQuery, roleFilter]);
 
-  // Créer un utilisateur
-  const handleCreateUser = async (data: any) => {
-    try {
-      setIsSubmitting(true);
-      await userService.createUser(data);
-      notifications.show({
-        title: 'Succès',
-        message: 'Utilisateur créé avec succès',
-        color: 'green',
-      });
-      setIsCreateModalOpen(false);
-      loadUsers();
-    } catch (error: any) {
-      notifications.show({
-        title: 'Erreur',
-        message: error.message || 'Impossible de créer l\'utilisateur',
-        color: 'red',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Mettre à jour un utilisateur
-  const handleUpdateUser = async (data: any) => {
-    if (!selectedUser) return;
-    
-    try {
-      setIsSubmitting(true);
-      await userService.updateUser(selectedUser.id, data);
-      notifications.show({
-        title: 'Succès',
-        message: 'Utilisateur mis à jour avec succès',
-        color: 'green',
-      });
-      setIsEditModalOpen(false);
-      loadUsers();
-    } catch (error: any) {
-      notifications.show({
-        title: 'Erreur',
-        message: error.message || 'Impossible de mettre à jour l\'utilisateur',
-        color: 'red',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Supprimer un utilisateur
-  const handleDeleteUser = async () => {
-    if (!selectedUser) return;
-    
-    try {
-      setIsSubmitting(true);
-      await userService.deleteUser(selectedUser.id);
-      notifications.show({
-        title: 'Succès',
-        message: 'Utilisateur supprimé avec succès',
-        color: 'green',
-      });
-      setIsDeleteModalOpen(false);
-      loadUsers();
-    } catch (error: any) {
-      notifications.show({
-        title: 'Erreur',
-        message: error.message || 'Impossible de supprimer l\'utilisateur',
-        color: 'red',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Obtenir la couleur du badge selon le rôle
+  // Get badge color based on role
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'admin':
@@ -165,7 +116,7 @@ export const UserList: React.FC = () => {
     }
   };
 
-  // Obtenir le libellé du rôle
+  // Get role label
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'admin':
@@ -179,120 +130,113 @@ export const UserList: React.FC = () => {
     }
   };
 
-  // Obtenir les initiales pour l'avatar
+  // Get initials for avatar
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
   return (
-    <>
-      <Stack spacing="md">
-        <Group position="apart">
-          <Text size="xl" weight={700}>Gestion des Utilisateurs</Text>
-          <Button 
-            leftIcon={<IconUserPlus size={16} />} 
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            Ajouter un utilisateur
-          </Button>
-        </Group>
+    <Stack gap="md">
+      <Flex justify="space-between" align="center">
+        <Title order={2}>Gestion des Utilisateurs</Title>
+        <Button leftSection={<IconUserPlus size={16} />} onClick={() => setIsCreateModalOpen(true)}>
+          Ajouter un utilisateur
+        </Button>
+      </Flex>
 
-        <Group>
-          <TextInput
-            placeholder="Rechercher un utilisateur..."
-            icon={<IconSearch size={16} />}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.currentTarget.value)}
-            style={{ flex: 1 }}
-          />
-          <Select
-            placeholder="Filtrer par rôle"
-            icon={<IconFilter size={16} />}
-            clearable
-            data={[
-              { value: 'admin', label: 'Administrateur' },
-              { value: 'technician', label: 'Technicien' },
-              { value: 'farmer', label: 'Agriculteur' },
-            ]}
-            value={roleFilter}
-            onChange={setRoleFilter}
-            style={{ width: '200px' }}
-          />
-        </Group>
+      <Flex gap="md">
+        <TextInput
+          placeholder="Rechercher un utilisateur..."
+          leftSection={<IconSearch size={16} />}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.currentTarget.value)}
+          style={{ flex: 1 }}
+        />
+        <Select
+          placeholder="Filtrer par rôle"
+          leftSection={<IconFilter size={16} />}
+          clearable
+          data={[
+            { value: 'admin', label: 'Administrateur' },
+            { value: 'technician', label: 'Technicien' },
+            { value: 'farmer', label: 'Agriculteur' },
+          ]}
+          value={roleFilter}
+          onChange={setRoleFilter}
+          style={{ width: '200px' }}
+        />
+      </Flex>
 
-        {isLoading ? (
-          <Text align="center">Chargement des utilisateurs...</Text>
-        ) : filteredUsers.length === 0 ? (
-          <Card shadow="sm" p="lg" radius="md" withBorder>
-            <Text align="center" color="dimmed">
-              Aucun utilisateur trouvé. {!searchQuery && !roleFilter && 'Ajoutez un utilisateur pour commencer.'}
-            </Text>
-          </Card>
-        ) : (
-          <Grid>
-            {filteredUsers.map((user) => (
-              <Grid.Col key={user.id} span={12} sm={6} md={4}>
-                <Card shadow="sm" p="lg" radius="md" withBorder>
-                  <Group position="apart" mb="xs">
-                    <Group>
-                      <Avatar color={getRoleBadgeColor(user.role)} radius="xl">
-                        {getInitials(user.first_name, user.last_name)}
-                      </Avatar>
-                      <div>
-                        <Text weight={500}>{user.first_name} {user.last_name}</Text>
-                        <Text size="xs" color="dimmed">@{user.username}</Text>
-                      </div>
-                    </Group>
-                    <Menu withinPortal position="bottom-end" shadow="sm">
-                      <Menu.Target>
-                        <ActionIcon>
-                          <IconDotsVertical size={16} />
-                        </ActionIcon>
-                      </Menu.Target>
-                      <Menu.Dropdown>
-                        <Menu.Item 
-                          icon={<IconEdit size={16} />} 
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setIsEditModalOpen(true);
-                          }}
-                        >
-                          Modifier
-                        </Menu.Item>
-                        <Menu.Item 
-                          icon={<IconTrash size={16} />} 
-                          color="red"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setIsDeleteModalOpen(true);
-                          }}
-                        >
-                          Supprimer
-                        </Menu.Item>
-                      </Menu.Dropdown>
-                    </Menu>
-                  </Group>
+      {isLoading ? (
+        <Text ta="center">Chargement des utilisateurs...</Text>
+      ) : filteredUsers.length === 0 ? (
+        <Card shadow="sm" p="lg" radius="md" withBorder>
+          <Text ta="center" c="dimmed">
+            Aucun utilisateur trouvé. {!searchQuery && !roleFilter && 'Ajoutez un utilisateur pour commencer.'}
+          </Text>
+        </Card>
+      ) : (
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
+          {filteredUsers.map((user) => (
+            <Card key={user.id} shadow="sm" p="lg" radius="md" withBorder>
+              <Group justify="space-between" mb="xs">
+                <Group>
+                  <Avatar color={getRoleBadgeColor(user.role)} radius="xl">
+                    {getInitials(user.first_name, user.last_name)}
+                  </Avatar>
+                  <div>
+                    <Text fw={500}>
+                      {user.first_name} {user.last_name}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      @{user.username}
+                    </Text>
+                  </div>
+                </Group>
+                <Menu withinPortal position="bottom-end" shadow="sm">
+                  <Menu.Target>
+                    <ActionIcon variant="subtle">
+                      <IconDotsVertical size={16} />
+                    </ActionIcon>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item
+                      leftSection={<IconEdit size={16} />}
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setIsEditModalOpen(true);
+                      }}
+                    >
+                      Modifier
+                    </Menu.Item>
+                    <Menu.Item
+                      leftSection={<IconTrash size={16} />}
+                      color="red"
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setIsDeleteModalOpen(true);
+                      }}
+                    >
+                      Supprimer
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              </Group>
 
-                  <Stack spacing={5}>
-                    <Text size="sm">{user.email}</Text>
-                    <Group position="apart">
-                      <Badge color={getRoleBadgeColor(user.role)}>
-                        {getRoleLabel(user.role)}
-                      </Badge>
-                      <Badge color={user.is_active ? 'green' : 'gray'}>
-                        {user.is_active ? 'Actif' : 'Inactif'}
-                      </Badge>
-                    </Group>
-                  </Stack>
-                </Card>
-              </Grid.Col>
-            ))}
-          </Grid>
-        )}
-      </Stack>
+              <Stack gap={5}>
+                <Text size="sm">{user.email}</Text>
+                <Group justify="space-between">
+                  <Badge color={getRoleBadgeColor(user.role)}>{getRoleLabel(user.role)}</Badge>
+                  <Badge color={user.is_active ? 'green' : 'gray'}>{user.is_active ? 'Actif' : 'Inactif'}</Badge>
+                </Group>
+              </Stack>
+            </Card>
+          ))}
+        </SimpleGrid>
+      )}
 
-      {/* Modal pour créer un utilisateur */}
-      <Modal
+      {/* Modal for creating a user */}
+      {/* <Modal
         opened={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         title="Ajouter un utilisateur"
@@ -303,10 +247,10 @@ export const UserList: React.FC = () => {
           onCancel={() => setIsCreateModalOpen(false)}
           isSubmitting={isSubmitting}
         />
-      </Modal>
+      </Modal> */}
 
-      {/* Modal pour modifier un utilisateur */}
-      <Modal
+      {/* Modal for editing a user */}
+      {/* <Modal
         opened={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         title="Modifier l'utilisateur"
@@ -320,19 +264,20 @@ export const UserList: React.FC = () => {
             isSubmitting={isSubmitting}
           />
         )}
-      </Modal>
+      </Modal> */}
 
-      {/* Modal pour confirmer la suppression */}
-      <Modal
+      {/* Modal for confirming deletion */}
+      {/* <Modal
         opened={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         title="Confirmer la suppression"
         size="sm"
       >
         <Text mb="md">
-          Êtes-vous sûr de vouloir supprimer l'utilisateur {selectedUser?.first_name} {selectedUser?.last_name} ? Cette action est irréversible.
+          Êtes-vous sûr de vouloir supprimer l'utilisateur {selectedUser?.first_name} {selectedUser?.last_name} ? Cette
+          action est irréversible.
         </Text>
-        <Group position="right">
+        <Group justify="flex-end">
           <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
             Annuler
           </Button>
@@ -340,7 +285,7 @@ export const UserList: React.FC = () => {
             Supprimer
           </Button>
         </Group>
-      </Modal>
-    </>
+      </Modal> */}
+    </Stack>
   );
 };

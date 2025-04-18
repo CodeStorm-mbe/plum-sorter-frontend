@@ -30,6 +30,7 @@ export const ClassificationForm: React.FC<ClassificationFormProps> = ({
   farmId
 }) => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [fileInputError, setFileInputError] = useState<string | null>(null);
   
   const { 
     register, 
@@ -58,8 +59,10 @@ export const ClassificationForm: React.FC<ClassificationFormProps> = ({
         setPreviewImage(reader.result as string);
       };
       reader.readAsDataURL(file);
+      setFileInputError(null);
     } else {
       setPreviewImage(null);
+      setFileInputError('L\'image est requise');
     }
   };
 
@@ -78,25 +81,25 @@ export const ClassificationForm: React.FC<ClassificationFormProps> = ({
 
   return (
     <Box component="form" onSubmit={handleSubmit(handleFormSubmit)}>
-      <Stack spacing="md">
+      <Stack gap="md">
         <FileInput
           label="Sélectionner une image de prune"
           placeholder="Cliquez pour sélectionner une image"
           accept="image/png,image/jpeg,image/jpg"
-          icon={<IconUpload size={14} />}
+          leftSection={<IconUpload size={14} />}
           onChange={handleImageChange}
-          error={errors.image?.message}
+          error={fileInputError}
           required
         />
 
         {previewImage && (
-          <Box sx={{ maxWidth: '100%', textAlign: 'center' }}>
-            <Text size="sm" weight={500} mb="xs">Prévisualisation :</Text>
+          <Box style={{ maxWidth: '100%', textAlign: 'center' }}>
+            <Text size="sm" fw={500} mb="xs">Prévisualisation :</Text>
             <Image
               src={previewImage}
               alt="Prévisualisation de l'image"
               radius="md"
-              sx={{ maxHeight: '300px', maxWidth: '100%', margin: '0 auto' }}
+              style={{ maxHeight: '300px', maxWidth: '100%', margin: '0 auto' }}
             />
           </Box>
         )}
@@ -107,14 +110,14 @@ export const ClassificationForm: React.FC<ClassificationFormProps> = ({
           {...register('use_tta')}
         />
 
-        <Group position="right" mt="md">
+        <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={onCancel}>
             Annuler
           </Button>
           <Button 
             type="submit" 
             loading={isSubmitting}
-            leftIcon={<IconPhoto size={16} />}
+            leftSection={<IconPhoto size={16} />}
             color="green"
           >
             Classifier

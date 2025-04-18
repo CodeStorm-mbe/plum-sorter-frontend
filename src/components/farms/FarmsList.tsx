@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { notifications } from '../../utils/notifications';
 import { FarmForm } from './FarmForm';
 import { Farm } from '../../types';
-import { farmService } from '../../services';
+import { FarmService } from '../../services';
 
 export const FarmsList: React.FC = () => {
   const [farms, setFarms] = useState<Farm[]>([]);
@@ -26,7 +26,7 @@ export const FarmsList: React.FC = () => {
   const loadFarms = async () => {
     try {
       setIsLoading(true);
-      const response = await farmService.getFarms();
+      const response = await FarmService.getFarms();
       setFarms(response.results || []);
     } catch (error: any) {
       notifications.show({
@@ -43,7 +43,7 @@ export const FarmsList: React.FC = () => {
   const handleCreateFarm = async (data: any) => {
     try {
       setIsSubmitting(true);
-      await farmService.createFarm(data);
+      await FarmService.createFarm(data);
       notifications.show({
         title: 'Succès',
         message: 'Ferme créée avec succès',
@@ -68,7 +68,7 @@ export const FarmsList: React.FC = () => {
     
     try {
       setIsSubmitting(true);
-      await farmService.updateFarm(selectedFarm.id, data);
+      await FarmService.updateFarm(selectedFarm.id, data);
       notifications.show({
         title: 'Succès',
         message: 'Ferme mise à jour avec succès',
@@ -93,7 +93,7 @@ export const FarmsList: React.FC = () => {
     
     try {
       setIsSubmitting(true);
-      await farmService.deleteFarm(selectedFarm.id);
+      await FarmService.deleteFarm(selectedFarm.id);
       notifications.show({
         title: 'Succès',
         message: 'Ferme supprimée avec succès',
@@ -119,10 +119,10 @@ export const FarmsList: React.FC = () => {
 
   return (
     <>
-      <Group position="apart" mb="md">
+      <Group justify="space-between" mb="md">
         <Title order={2}>Mes Fermes</Title>
         <Button 
-          leftIcon={<IconPlus size={16} />} 
+          leftSection={<IconPlus size={16} />} 
           onClick={() => setIsCreateModalOpen(true)}
         >
           Ajouter une ferme
@@ -133,7 +133,7 @@ export const FarmsList: React.FC = () => {
         <Text>Chargement des fermes...</Text>
       ) : farms.length === 0 ? (
         <Card shadow="sm" p="lg" radius="md" withBorder>
-          <Text align="center" color="dimmed">
+          <Text ta="center" c="dimmed">
             Vous n'avez pas encore de fermes. Cliquez sur "Ajouter une ferme" pour commencer.
           </Text>
         </Card>
@@ -142,8 +142,8 @@ export const FarmsList: React.FC = () => {
           {farms.map((farm) => (
             <Card key={farm.id} shadow="sm" p="lg" radius="md" withBorder>
               <Card.Section withBorder inheritPadding py="xs">
-                <Group position="apart">
-                  <Text weight={500}>{farm.name}</Text>
+                <Group justify="space-between">
+                  <Text fw={500}>{farm.name}</Text>
                   <Menu withinPortal position="bottom-end" shadow="sm">
                     <Menu.Target>
                       <ActionIcon>
@@ -152,7 +152,7 @@ export const FarmsList: React.FC = () => {
                     </Menu.Target>
                     <Menu.Dropdown>
                       <Menu.Item 
-                        icon={<IconEdit size={16} />} 
+                        leftSection={<IconEdit size={16} />} 
                         onClick={() => {
                           setSelectedFarm(farm);
                           setIsEditModalOpen(true);
@@ -161,7 +161,7 @@ export const FarmsList: React.FC = () => {
                         Modifier
                       </Menu.Item>
                       <Menu.Item 
-                        icon={<IconTrash size={16} />} 
+                        leftSection={<IconTrash size={16} />} 
                         color="red"
                         onClick={() => {
                           setSelectedFarm(farm);
@@ -174,22 +174,22 @@ export const FarmsList: React.FC = () => {
                   </Menu>
                 </Group>
               </Card.Section>
-              <Stack spacing="xs" mt="md">
-                <Text size="sm" color="dimmed">Emplacement: {farm.location}</Text>
+              <Stack gap="xs" mt="md">
+                <Text size="sm" c="dimmed">Emplacement: {farm.location}</Text>
                 {farm.size && (
-                  <Text size="sm" color="dimmed">Taille: {farm.size} hectares</Text>
+                  <Text size="sm" c="dimmed">Taille: {farm.size} hectares</Text>
                 )}
                 {farm.description && (
                   <Text size="sm" lineClamp={2}>{farm.description}</Text>
                 )}
-                <Group position="apart" mt="md">
+                <Group justify="space-between" mt="md">
                   <Badge color="blue">
-                    {farm.total_batches || 0} lots
+                    {0} lots
                   </Badge>
                   <Button 
                     variant="light" 
                     onClick={() => handleViewFarm(farm.id)}
-                    rightIcon={<IconMap size={16} />}
+                    rightSection={<IconMap size={16} />}
                   >
                     Voir détails
                   </Button>
@@ -241,7 +241,7 @@ export const FarmsList: React.FC = () => {
         <Text mb="md">
           Êtes-vous sûr de vouloir supprimer la ferme "{selectedFarm?.name}" ? Cette action est irréversible.
         </Text>
-        <Group position="right">
+        <Group justify="flex-end">
           <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
             Annuler
           </Button>
