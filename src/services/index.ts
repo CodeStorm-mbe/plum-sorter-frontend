@@ -7,6 +7,7 @@ export { default as ClassificationService } from './classificationService';
 export { default as BatchService } from './batchService';
 export { default as ModelService } from './modelService';
 export { default as NotificationService } from './notificationService';
+export { default as dashboardService } from './dashboardService';
 
 // Réexporter les types
 export * from './authService';

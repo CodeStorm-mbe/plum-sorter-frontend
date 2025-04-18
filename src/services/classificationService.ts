@@ -3,11 +3,21 @@ import api from './api';
 
 // Service pour la gestion des classifications
 class ClassificationService {
+  // Obtenir les tendances de qualité
+  static async getQualityTrends(params = {}) {
+    try {
+      const response = await api.get('plum-classifier/quality-trends/', { params });
+      return response.data.results;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des tendances de qualité:', error);
+      throw error;
+    }
+  }
   // Obtenir la liste des classifications
   static async getClassifications(params = {}) {
     try {
       const response = await api.get('plum-classifier/classifications/', { params });
-      return response.data;
+      return response.data.results;
     } catch (error) {
       console.error('Erreur lors de la récupération des classifications:', error);
       throw error;

@@ -41,11 +41,13 @@ const StatsSummaryWidget: React.FC<StatsSummaryWidgetProps> = ({
     );
   }
 
+  console.log(dashboardData);
+
   // Statistiques communes à tous les rôles
   const commonStats = [
     {
       label: "Classifications totales",
-      value: dashboardData.totalClassifications.toLocaleString(),
+      value: dashboardData.totalClassifications,
       color: "text-accent-primary"
     },
     {
@@ -83,6 +85,7 @@ const StatsSummaryWidget: React.FC<StatsSummaryWidgetProps> = ({
     ];
   } else if (user?.role === 'farmer' && 'farms' in dashboardData) {
     const farmerData = dashboardData as any;
+    console.log(farmerData);
     roleSpecificStats = [
       {
         label: "Nombre de lots",

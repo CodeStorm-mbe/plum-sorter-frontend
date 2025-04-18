@@ -70,7 +70,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Rediriger vers la page précédente ou la page d'accueil
       const origin = location.state?.from || '/dashboard';
-      navigate(origin);
+      
+      // Rediriger les agriculteurs vers leur tableau de bord spécifique
+      if (userData.role === 'farmer') {
+        navigate('/farmer-dashboard');
+      } else {
+        navigate(origin);
+      }
       
       notifications.show({
         title: 'Connexion réussie',

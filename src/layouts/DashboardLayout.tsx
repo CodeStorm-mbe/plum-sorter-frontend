@@ -36,11 +36,11 @@ export function DashboardLayout() {
 
   const navItems = [
     { label: 'Tableau de bord', icon: <IconDashboard size={20} />, path: '/dashboard' },
-    { label: 'Fermes', icon: <IconHome2 size={20} />, path: '/dashboard/farms' },
-    { label: 'Classification', icon: <IconApple size={20} />, path: '/dashboard/classification' },
-    { label: 'Lots', icon: <IconPackages size={20} />, path: '/dashboard/batches' },
-    { label: 'Statistiques', icon: <IconChartBar size={20} />, path: '/dashboard/statistics' },
-    { label: 'Paramètres', icon: <IconSettings size={20} />, path: '/dashboard/settings' },
+    { label: 'Fermes', icon: <IconHome2 size={20} />, path: '/farms' },
+    { label: 'Classification', icon: <IconApple size={20} />, path: '/classifications' },
+    { label: 'Lots', icon: <IconPackages size={20} />, path: '/batches' },
+    { label: 'Statistiques', icon: <IconChartBar size={20} />, path: '/statistics' },
+    { label: 'Paramètres', icon: <IconSettings size={20} />, path: '/settings' },
   ];
 
   return (
@@ -93,10 +93,10 @@ export function DashboardLayout() {
               </Menu.Target>
               <Menu.Dropdown>
                 <Menu.Label>Compte</Menu.Label>
-                <Menu.Item leftSection={<IconUser style={{ width: rem(14), height: rem(14) }} />} onClick={() => navigate('/dashboard/profile')}>
+                <Menu.Item leftSection={<IconUser style={{ width: rem(14), height: rem(14) }} />} onClick={() => navigate('/profile')}>
                   Mon profil
                 </Menu.Item>
-                <Menu.Item leftSection={<IconSettings style={{ width: rem(14), height: rem(14) }} />} onClick={() => navigate('/dashboard/settings')}>
+                <Menu.Item leftSection={<IconSettings style={{ width: rem(14), height: rem(14) }} />} onClick={() => navigate('/settings')}>
                   Paramètres
                 </Menu.Item>
                 <Menu.Divider />

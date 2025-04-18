@@ -10,7 +10,7 @@ import { notifications } from '../utils/notifications';
 // Service pour récupérer les fermes
 const fetchFarms = async (): Promise<Farm[]> => {
   const response = await api.get('/farms/');
-  return response.data;
+  return response.data.results;
 };
 
 // Service pour classifier une image
@@ -153,6 +153,8 @@ export function ClassificationPage() {
     
     return mapping[className] || 'gray';
   };
+
+  console.log(farms);
 
   return (
     <Container size="xl" py="xl">

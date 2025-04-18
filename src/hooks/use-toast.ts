@@ -18,6 +18,14 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement
 }
 
+type ToastType = 'success' | 'error' | 'warning' | 'info';
+
+interface ToastOptions {
+  type: ToastType;
+  title: string;
+  message: string;
+}
+
 const actionTypes = {
   ADD_TOAST: "ADD_TOAST",
   UPDATE_TOAST: "UPDATE_TOAST",
@@ -184,9 +192,21 @@ function useToast() {
     }
   }, [state])
 
+  // Ajout de la fonction showToast pour compatibilité
+  const showToast = (options: ToastOptions) => {
+    const { type, title, message } = options;
+    
+    return toast({
+      title: title,
+      description: message,
+      variant: type === 'error' ? 'destructive' : 'default',
+    });
+  };
+
   return {
     ...state,
     toast,
+    showToast,
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   }
 }

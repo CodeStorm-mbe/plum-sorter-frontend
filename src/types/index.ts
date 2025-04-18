@@ -29,6 +29,11 @@ export interface Farm {
     id: number;
     username: string;
   };
+  quality_score?: number;
+  batches_count?: number;
+  totalBatches?: number;
+  recent_quality?: string;
+  quality_trend?: string;
 }
 
 export interface PlumBatch {

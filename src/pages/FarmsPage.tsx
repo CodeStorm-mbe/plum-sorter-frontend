@@ -1,436 +1,310 @@
-import { useState } from 'react';
-import { Container, Title, Text, Card, Button, Group, TextInput, Modal, SimpleGrid, Badge, ActionIcon, Menu, Box, Loader, Center, Alert } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { IconPlus, IconEdit, IconTrash, IconDotsVertical, IconMapPin, IconRuler, IconUser, IconAlertCircle } from '@tabler/icons-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Search, Filter, Map, List, Grid, Loader } from 'lucide-react';
+import FarmerSidebar from '../components/FarmerSidebar';
+import Button from '../components/Button';
+import PageTransition from '../components/PageTransition';
+import { FarmService } from '../services';
 import { Farm } from '../types';
-import api from '../services/api';
-import { notifications } from '../utils/notifications';
+import { useToast } from '../hooks/use-toast';
+import FarmCard from '../components/FarmCard';
+import FarmListItem from '../components/FarmListItem';
 
-// Service pour récupérer les fermes
-const fetchFarms = async (): Promise<Farm[]> => {
-  const response = await api.get('/farms/');
-  return response.data;
-};
+const FarmsPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { showToast } = useToast();
+  
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [farms, setFarms] = useState<Farm[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState<string>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-// Service pour créer une ferme
-const createFarm = async (farmData: Omit<Farm, 'id' | 'owner' | 'created_at' | 'updated_at'>): Promise<Farm> => {
-  const response = await api.post('/farms/', farmData);
-  return response.data;
-};
+  // Charger les fermes
+  useEffect(() => {
+    const loadFarms = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const farmsData = await FarmService.getFarms();
+        setFarms(farmsData);
+      } catch (err: any) {
+        setError(err.message || 'Erreur lors du chargement des fermes');
+        showToast({
+          type: 'error',
+          title: 'Erreur',
+          message: 'Impossible de charger les fermes'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadFarms();
+  }, [showToast]);
 
-// Service pour mettre à jour une ferme
-const updateFarm = async ({ id, ...farmData }: Partial<Farm> & { id: number }): Promise<Farm> => {
-  const response = await api.put(`/farms/${id}/`, farmData);
-  return response.data;
-};
+  // Filtrer les fermes selon le terme de recherche
+  const filteredFarms = farms.filter(farm => 
+    farm.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    farm.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    farm.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-// Service pour supprimer une ferme
-const deleteFarm = async (id: number): Promise<void> => {
-  await api.delete(`/farms/${id}/`);
-};
-
-export function FarmsPage() {
-  const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
-  const queryClient = useQueryClient();
-
-  // Formulaire pour créer/éditer une ferme
-  const form = useForm({
-    initialValues: {
-      name: '',
-      location: '',
-      size: 0,
-      description: '',
-      latitude: undefined as number | undefined,
-      longitude: undefined as number | undefined,
-    },
-    validate: {
-      name: (value: string) => (value.length < 3 ? 'Le nom doit contenir au moins 3 caractères' : null),
-      location: (value: string) => (value.length < 3 ? 'La localisation doit contenir au moins 3 caractères' : null),
-      size: (value: number) => (value <= 0 ? 'La taille doit être supérieure à 0' : null),
-    },
-  });
-
-  // Requête pour récupérer les fermes
-  const { data: farms, isLoading, error } = useQuery({
-    queryKey: ['farms'],
-    queryFn: fetchFarms,
-  });
-
-  // Mutation pour créer une ferme
-  const createMutation = useMutation({
-    mutationFn: createFarm,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['farms'] });
-      setCreateModalOpen(false);
-      form.reset();
-      notifications.show({
-        title: 'Succès',
-        message: 'La ferme a été créée avec succès',
-        color: 'green',
-      });
-    },
-    onError: (error: any) => {
-      notifications.show({
-        title: 'Erreur',
-        message: error.message || 'Une erreur est survenue lors de la création de la ferme',
-        color: 'red',
-      });
-    },
-  });
-
-  // Mutation pour mettre à jour une ferme
-  const updateMutation = useMutation({
-    mutationFn: updateFarm,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['farms'] });
-      setEditModalOpen(false);
-      setSelectedFarm(null);
-      form.reset();
-      notifications.show({
-        title: 'Succès',
-        message: 'La ferme a été mise à jour avec succès',
-        color: 'green',
-      });
-    },
-    onError: (error: any) => {
-      notifications.show({
-        title: 'Erreur',
-        message: error.message || 'Une erreur est survenue lors de la mise à jour de la ferme',
-        color: 'red',
-      });
-    },
-  });
-
-  // Mutation pour supprimer une ferme
-  const deleteMutation = useMutation({
-    mutationFn: deleteFarm,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['farms'] });
-      setDeleteModalOpen(false);
-      setSelectedFarm(null);
-      notifications.show({
-        title: 'Succès',
-        message: 'La ferme a été supprimée avec succès',
-        color: 'green',
-      });
-    },
-    onError: (error: any) => {
-      notifications.show({
-        title: 'Erreur',
-        message: error.message || 'Une erreur est survenue lors de la suppression de la ferme',
-        color: 'red',
-      });
-    },
-  });
-
-  // Mettre à jour le formulaire lorsqu'une ferme est sélectionnée pour l'édition
-  useState(() => {
-    if (selectedFarm && editModalOpen) {
-      form.setValues({
-        name: selectedFarm.name,
-        location: selectedFarm.location,
-        size: selectedFarm.size,
-        description: selectedFarm.description || '',
-        latitude: selectedFarm.latitude,
-        longitude: selectedFarm.longitude,
-      });
+  // Trier les fermes
+  const sortedFarms = [...filteredFarms].sort((a, b) => {
+    let comparison = 0;
+    
+    if (sortBy === 'name') {
+      comparison = a.name.localeCompare(b.name);
+    } else if (sortBy === 'location') {
+      comparison = a.location.localeCompare(b.location);
+    } else if (sortBy === 'size') {
+      comparison = a.size - b.size;
+    } else if (sortBy === 'date') {
+      comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     }
+    
+    return sortOrder === 'asc' ? comparison : -comparison;
   });
 
-  // Gérer la soumission du formulaire de création
-  const handleCreateSubmit = (values: typeof form.values) => {
-    createMutation.mutate(values);
-  };
-
-  // Gérer la soumission du formulaire d'édition
-  const handleEditSubmit = (values: typeof form.values) => {
-    if (selectedFarm) {
-      updateMutation.mutate({ id: selectedFarm.id, ...values });
+  // Gérer le changement de tri
+  const handleSortChange = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
     }
   };
-
-  // Gérer la suppression d'une ferme
-  const handleDelete = () => {
-    if (selectedFarm) {
-      deleteMutation.mutate(selectedFarm.id);
-    }
-  };
-
-  // Ouvrir le modal d'édition
-  const openEditModal = (farm: Farm) => {
-    setSelectedFarm(farm);
-    setEditModalOpen(true);
-  };
-
-  // Ouvrir le modal de suppression
-  const openDeleteModal = (farm: Farm) => {
-    setSelectedFarm(farm);
-    setDeleteModalOpen(true);
-  };
-
-  // Afficher un loader pendant le chargement
-  if (isLoading) {
-    return (
-      <Center style={{ height: 'calc(100vh - 60px)' }}>
-        <Loader size="xl" />
-      </Center>
-    );
-  }
-
-  // Afficher une erreur si la requête a échoué
-  if (error) {
-    return (
-      <Container size="xl" py="xl">
-        <Alert icon={<IconAlertCircle size={16} />} title="Erreur" color="red">
-          Une erreur est survenue lors du chargement des fermes. Veuillez réessayer plus tard.
-        </Alert>
-      </Container>
-    );
-  }
 
   return (
-    <Container size="xl" py="xl">
-      <Group justify="space-between" mb="xl">
-        <div>
-          <Title order={2}>Gestion des Fermes</Title>
-          <Text c="dimmed">Gérez vos fermes et leurs informations</Text>
+    <PageTransition>
+      <div className="flex min-h-screen bg-background">
+        <FarmerSidebar />
+        
+        <div className="flex-1 ml-64">
+          <div className="container mx-auto pt-24 pb-16 px-6">
+            <motion.div
+              className="flex flex-col md:flex-row items-center justify-between mb-8"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div>
+                <h1 className="text-3xl md:text-4xl font-title font-bold mb-2 bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
+                  Mes fermes
+                </h1>
+                <p className="text-white/60">
+                  Gérez vos exploitations agricoles et suivez leurs performances
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-4 mt-4 md:mt-0">
+                <Button 
+                  variant="primary" 
+                  icon={<Plus className="h-4 w-4 mr-2" />} 
+                  onClick={() => navigate('/farms/new')}
+                >
+                  Ajouter une ferme
+                </Button>
+                <Button 
+                  variant="outline" 
+                  icon={<Map className="h-4 w-4 mr-2" />} 
+                  onClick={() => navigate('/farms/map')}
+                >
+                  Voir la carte
+                </Button>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="mb-6 flex flex-col md:flex-row items-center justify-between gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <div className="relative w-full md:w-auto flex-1">
+                <input
+                  type="text"
+                  placeholder="Rechercher une ferme..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-background-light/50 border border-white/10 rounded-md px-4 py-2 pl-10 text-white focus:outline-none focus:ring-1 focus:ring-accent-primary"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/60" />
+              </div>
+              
+              <div className="flex items-center gap-4 w-full md:w-auto">
+                <div className="relative flex-1 md:flex-none">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => handleSortChange(e.target.value)}
+                    className="bg-background-light/50 border border-white/10 text-white rounded-md px-4 py-2 pr-8 appearance-none focus:outline-none focus:ring-1 focus:ring-accent-primary w-full"
+                  >
+                    <option value="name">Trier par nom</option>
+                    <option value="location">Trier par localisation</option>
+                    <option value="size">Trier par superficie</option>
+                    <option value="date">Trier par date</option>
+                  </select>
+                  <Filter className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/60 pointer-events-none" />
+                </div>
+                
+                <div className="flex items-center bg-background-light/50 border border-white/10 rounded-md">
+                  <button
+                    className={`p-2 ${viewMode === 'grid' ? 'bg-accent-primary/20 text-accent-primary' : 'text-white/60 hover:text-white'}`}
+                    onClick={() => setViewMode('grid')}
+                    title="Vue en grille"
+                  >
+                    <Grid className="h-4 w-4" />
+                  </button>
+                  <button
+                    className={`p-2 ${viewMode === 'list' ? 'bg-accent-primary/20 text-accent-primary' : 'text-white/60 hover:text-white'}`}
+                    onClick={() => setViewMode('list')}
+                    title="Vue en liste"
+                  >
+                    <List className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+
+            {isLoading ? (
+              <div className="flex justify-center items-center h-64">
+                <Loader className="h-8 w-8 text-accent-primary animate-spin" />
+                <span className="ml-2 text-white/60">Chargement des fermes...</span>
+              </div>
+            ) : error ? (
+              <div className="card p-6 text-center">
+                <p className="text-red-500 mb-4">{error}</p>
+                <Button 
+                  variant="primary" 
+                  onClick={() => window.location.reload()}
+                >
+                  Réessayer
+                </Button>
+              </div>
+            ) : sortedFarms.length === 0 ? (
+              <motion.div
+                className="card p-8 text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                {searchTerm ? (
+                  <>
+                    <p className="text-white/60 mb-4">Aucune ferme ne correspond à votre recherche.</p>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setSearchTerm('')}
+                    >
+                      Effacer la recherche
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-xl font-semibold mb-2">Vous n'avez pas encore de fermes</h3>
+                    <p className="text-white/60 mb-6">Commencez par ajouter votre première exploitation agricole</p>
+                    <Button 
+                      variant="primary" 
+                      icon={<Plus className="h-4 w-4 mr-2" />} 
+                      onClick={() => navigate('/farms/new')}
+                    >
+                      Ajouter une ferme
+                    </Button>
+                  </>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                {viewMode === 'grid' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {sortedFarms.map((farm) => (
+                      <FarmCard 
+                        key={farm.id} 
+                        farm={farm} 
+                        onClick={() => navigate(`/farms/${farm.id}`)}
+                        onEdit={() => navigate(`/farms/${farm.id}/edit`)}
+                        onDelete={async () => {
+                          if (window.confirm('Êtes-vous sûr de vouloir supprimer cette ferme ?')) {
+                            try {
+                              await FarmService.deleteFarm(farm.id);
+                              setFarms(farms.filter(f => f.id !== farm.id));
+                              showToast({
+                                type: 'success',
+                                title: 'Succès',
+                                message: 'Ferme supprimée avec succès'
+                              });
+                            } catch (err: any) {
+                              showToast({
+                                type: 'error',
+                                title: 'Erreur',
+                                message: 'Impossible de supprimer la ferme'
+                              });
+                            }
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="card overflow-hidden">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-background-light/30">
+                          <th className="text-left py-3 px-4 text-white/80 font-medium">Nom</th>
+                          <th className="text-left py-3 px-4 text-white/80 font-medium">Localisation</th>
+                          <th className="text-left py-3 px-4 text-white/80 font-medium">Superficie</th>
+                          <th className="text-left py-3 px-4 text-white/80 font-medium">Lots</th>
+                          <th className="text-left py-3 px-4 text-white/80 font-medium">Date de création</th>
+                          <th className="text-right py-3 px-4 text-white/80 font-medium">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sortedFarms.map((farm) => (
+                          <FarmListItem 
+                            key={farm.id} 
+                            farm={farm}
+                            onClick={() => navigate(`/farms/${farm.id}`)}
+                            onEdit={() => navigate(`/farms/${farm.id}/edit`)}
+                            onDelete={async () => {
+                              if (window.confirm('Êtes-vous sûr de vouloir supprimer cette ferme ?')) {
+                                try {
+                                  await FarmService.deleteFarm(farm.id);
+                                  setFarms(farms.filter(f => f.id !== farm.id));
+                                  showToast({
+                                    type: 'success',
+                                    title: 'Succès',
+                                    message: 'Ferme supprimée avec succès'
+                                  });
+                                } catch (err: any) {
+                                  showToast({
+                                    type: 'error',
+                                    title: 'Erreur',
+                                    message: 'Impossible de supprimer la ferme'
+                                  });
+                                }
+                              }
+                            }}
+                          />
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </div>
         </div>
-        <Button leftSection={<IconPlus size={16} />} onClick={() => {
-          form.reset();
-          setCreateModalOpen(true);
-        }}>
-          Ajouter une ferme
-        </Button>
-      </Group>
-
-      {farms && farms.length === 0 ? (
-        <Card withBorder p="xl" radius="md" shadow="sm">
-          <Center style={{ minHeight: '200px', flexDirection: 'column', gap: '16px' }}>
-            <Text fw={500} size="lg" ta="center">
-              Vous n'avez pas encore de fermes
-            </Text>
-            <Text c="dimmed" ta="center" mb="md">
-              Commencez par ajouter votre première ferme pour gérer vos prunes
-            </Text>
-            <Button leftSection={<IconPlus size={16} />} onClick={() => setCreateModalOpen(true)}>
-              Ajouter une ferme
-            </Button>
-          </Center>
-        </Card>
-      ) : (
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
-          {farms?.map((farm) => (
-            <Card key={farm.id} withBorder padding="lg" radius="md" shadow="sm">
-              <Card.Section withBorder inheritPadding py="xs">
-                <Group justify="space-between">
-                  <Text fw={500}>{farm.name}</Text>
-                  <Menu position="bottom-end" shadow="md">
-                    <Menu.Target>
-                      <ActionIcon variant="subtle" color="gray">
-                        <IconDotsVertical size={16} />
-                      </ActionIcon>
-                    </Menu.Target>
-                    <Menu.Dropdown>
-                      <Menu.Item leftSection={<IconEdit size={14} />} onClick={() => openEditModal(farm)}>
-                        Modifier
-                      </Menu.Item>
-                      <Menu.Item leftSection={<IconTrash size={14} />} color="red" onClick={() => openDeleteModal(farm)}>
-                        Supprimer
-                      </Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
-                </Group>
-              </Card.Section>
-
-              <Group mt="md" mb="xs">
-                <Badge color="plum" variant="light">
-                  {farm.location}
-                </Badge>
-                <Badge color="blue" variant="light">
-                  {farm.size} hectares
-                </Badge>
-              </Group>
-
-              <Text size="sm" c="dimmed" lineClamp={2} mb="md">
-                {farm.description || 'Aucune description disponible'}
-              </Text>
-
-              <Box mt="md">
-                <Group gap="xs">
-                  <IconMapPin size={16} style={{ opacity: 0.7 }} />
-                  <Text size="sm">{farm.location}</Text>
-                </Group>
-                <Group gap="xs" mt="xs">
-                  <IconRuler size={16} style={{ opacity: 0.7 }} />
-                  <Text size="sm">{farm.size} hectares</Text>
-                </Group>
-                <Group gap="xs" mt="xs">
-                  <IconUser size={16} style={{ opacity: 0.7 }} />
-                  <Text size="sm">Propriétaire: {farm.owner_details?.username || 'Vous'}</Text>
-                </Group>
-              </Box>
-
-              <Button variant="light" color="plum" fullWidth mt="md">
-                Voir les détails
-              </Button>
-            </Card>
-          ))}
-        </SimpleGrid>
-      )}
-
-      {/* Modal de création de ferme */}
-      <Modal
-        opened={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-        title="Ajouter une nouvelle ferme"
-        centered
-      >
-        <form onSubmit={form.onSubmit(handleCreateSubmit)}>
-          <TextInput
-            label="Nom de la ferme"
-            placeholder="Ma ferme de prunes"
-            required
-            {...form.getInputProps('name')}
-          />
-          <TextInput
-            label="Localisation"
-            placeholder="Région, Ville, etc."
-            required
-            mt="md"
-            {...form.getInputProps('location')}
-          />
-          <TextInput
-            label="Taille (hectares)"
-            placeholder="10"
-            required
-            mt="md"
-            type="number"
-            min={0}
-            step={0.1}
-            {...form.getInputProps('size')}
-          />
-          <TextInput
-            label="Description"
-            placeholder="Description de la ferme"
-            mt="md"
-            {...form.getInputProps('description')}
-          />
-          <Group gap="xs" grow mt="md">
-            <TextInput
-              label="Latitude"
-              placeholder="45.123456"
-              type="number"
-              step="any"
-              {...form.getInputProps('latitude')}
-            />
-            <TextInput
-              label="Longitude"
-              placeholder="5.123456"
-              type="number"
-              step="any"
-              {...form.getInputProps('longitude')}
-            />
-          </Group>
-          <Group justify="flex-end" mt="xl">
-            <Button variant="outline" onClick={() => setCreateModalOpen(false)}>
-              Annuler
-            </Button>
-            <Button type="submit" loading={createMutation.isPending}>
-              Créer
-            </Button>
-          </Group>
-        </form>
-      </Modal>
-
-      {/* Modal d'édition de ferme */}
-      <Modal
-        opened={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        title="Modifier la ferme"
-        centered
-      >
-        <form onSubmit={form.onSubmit(handleEditSubmit)}>
-          <TextInput
-            label="Nom de la ferme"
-            placeholder="Ma ferme de prunes"
-            required
-            {...form.getInputProps('name')}
-          />
-          <TextInput
-            label="Localisation"
-            placeholder="Région, Ville, etc."
-            required
-            mt="md"
-            {...form.getInputProps('location')}
-          />
-          <TextInput
-            label="Taille (hectares)"
-            placeholder="10"
-            required
-            mt="md"
-            type="number"
-            min={0}
-            step={0.1}
-            {...form.getInputProps('size')}
-          />
-          <TextInput
-            label="Description"
-            placeholder="Description de la ferme"
-            mt="md"
-            {...form.getInputProps('description')}
-          />
-          <Group gap="xs" grow mt="md">
-            <TextInput
-              label="Latitude"
-              placeholder="45.123456"
-              type="number"
-              step="any"
-              {...form.getInputProps('latitude')}
-            />
-            <TextInput
-              label="Longitude"
-              placeholder="5.123456"
-              type="number"
-              step="any"
-              {...form.getInputProps('longitude')}
-            />
-          </Group>
-          <Group justify="flex-end" mt="xl">
-            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
-              Annuler
-            </Button>
-            <Button type="submit" loading={updateMutation.isPending}>
-              Enregistrer
-            </Button>
-          </Group>
-        </form>
-      </Modal>
-
-      {/* Modal de confirmation de suppression */}
-      <Modal
-        opened={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        title="Supprimer la ferme"
-        centered
-      >
-        <Text>
-          Êtes-vous sûr de vouloir supprimer la ferme "{selectedFarm?.name}" ? Cette action est irréversible.
-        </Text>
-        <Group justify="flex-end" mt="xl">
-          <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
-            Annuler
-          </Button>
-          <Button color="red" onClick={handleDelete} loading={deleteMutation.isPending}>
-            Supprimer
-          </Button>
-        </Group>
-      </Modal>
-    </Container>
+      </div>
+    </PageTransition>
   );
-}
+};
 
 export default FarmsPage;

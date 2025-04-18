@@ -10,13 +10,13 @@ import api from '../services/api';
 // Service pour récupérer les fermes
 const fetchFarms = async (): Promise<Farm[]> => {
   const response = await api.get('/farms/');
-  return response.data;
+  return response.data.results;
 };
 
 // Service pour récupérer les lots
 const fetchBatches = async (): Promise<PlumBatch[]> => {
   const response = await api.get('/batches/');
-  return response.data;
+  return response.data.results;
 };
 
 // Service pour créer un lot

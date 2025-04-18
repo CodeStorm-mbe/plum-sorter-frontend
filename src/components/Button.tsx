@@ -6,15 +6,16 @@ import { Link } from "react-router-dom"
 
 interface ButtonProps {
     children: React.ReactNode;
-    variant?: "primary" | "secondary" | "outline" | "ghost";
-    onClick?: () => void;
+    variant?: "primary" | "secondary" | "outline" | "ghost" | "link" | "danger";
+    onClick?: (e?: any) => void;
     className?: string;
     icon?: React.ReactNode;
     disabled?: boolean;
-    size?: "sm" | "md" | "lg";
+    size?: "sm" | "md" | "lg" | "icon";
     withGlow?: boolean;
     type?: "button" | "submit" | "reset";
     href?: string; // Ajout de la propriété href pour les liens
+    title?: string; // Ajout de la propriété title pour les tooltips
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -36,6 +37,7 @@ const Button: React.FC<ButtonProps> = ({
     sm: "py-1 px-3 text-sm",
     md: "py-2 px-6",
     lg: "py-3 px-8 text-lg",
+    icon: "p-2 w-10 h-10"
   }
 
   const variantClasses = {
@@ -43,6 +45,8 @@ const Button: React.FC<ButtonProps> = ({
     secondary: "bg-accent-secondary hover:bg-opacity-90 text-white",
     outline: "bg-transparent border border-accent-primary text-accent-primary hover:bg-accent-primary/10",
     ghost: "bg-transparent text-white hover:bg-white/10",
+    link: "bg-transparent text-accent-primary hover:underline p-0",
+    danger: "bg-red-600 hover:bg-red-700 text-white"
   }
 
   const glowClass = withGlow ? "glow" : ""

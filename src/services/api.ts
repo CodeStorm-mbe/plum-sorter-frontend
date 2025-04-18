@@ -1,68 +1,55 @@
 import axios from 'axios';
+import { prepareApiRequest } from '../utils/apiUtils';
 
+// Créer une instance axios avec la configuration de base
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://plum-api.onrender.com/api/',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000/api',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Intercepteur pour ajouter le token d'authentification
+// Intercepteur pour ajouter le token d'authentification à chaque requête
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Intercepteur pour gérer les erreurs et le rafraîchissement du token
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
     
-    // Si l'erreur est 401 (non autorisé) et que nous n'avons pas déjà essayé de rafraîchir le token
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) {
-          // Si pas de refresh token, déconnexion
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
-          window.location.href = '/login';
-          return Promise.reject(error);
-        }
-        
-        // Appel pour rafraîchir le token
-        // Correction: La route doit être 'api/auth/token/refresh/'
-        const baseUrl = import.meta.env.VITE_API_URL || 'https://plum-api.onrender.com/api/';
-        const response = await axios.post(
-          `${baseUrl}auth/token/refresh/`,
-          { refresh: refreshToken }
-        );
-        
-        if (response.data.access) {
-          localStorage.setItem('token', response.data.access);
-          // Mettre à jour le token dans la requête originale et la renvoyer
-          originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        // Si le rafraîchissement échoue, déconnexion
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
-      }
+    // Convertir les données de la requête de camelCase à snake_case
+    if (config.data) {
+      config.data = prepareApiRequest(config.data);
     }
     
+    return config;
+  },
+  (error) => {
     return Promise.reject(error);
+  }
+);
+
+// Intercepteur pour gérer les erreurs de réponse
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    // Gérer les erreurs d'authentification
+    if (error.response && error.response.status === 401) {
+      // Rediriger vers la page de connexion si le token est expiré
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    
+    // Formater l'erreur pour une meilleure gestion
+    const formattedError = {
+      message: error.response?.data?.detail || error.message || 'Une erreur est survenue',
+      status: error.response?.status,
+      details: error.response?.data
+    };
+    
+    return Promise.reject(formattedError);
   }
 );
 

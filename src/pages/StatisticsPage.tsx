@@ -11,7 +11,7 @@ import api from '../services/api';
 // Service pour récupérer les fermes
 const fetchFarms = async (): Promise<Farm[]> => {
   const response = await api.get('/farms/');
-  return response.data;
+  return response.data.results;
 };
 
 // Service pour récupérer les statistiques globales
@@ -31,7 +31,7 @@ const fetchFarmStatistics = async (farmId: number, params: { start_date?: string
   if (params.end_date) queryParams.append('end_date', params.end_date);
   
   const response = await api.get(`/farms/${farmId}/stats/?${queryParams.toString()}`);
-  return response.data;
+  return response.data.results;
 };
 
 export function StatisticsPage() {

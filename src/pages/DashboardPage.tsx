@@ -10,10 +10,16 @@ import RecentClassificationsWidget from '../components/RecentClassificationsWidg
 import PageTransition from '../components/PageTransition';
 import { Calendar, Download, RefreshCw } from 'lucide-react';
 import Button from '../components/Button';
+import { Navigate } from 'react-router-dom';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const { dashboardData, isLoading, error, refreshData, lastUpdated } = useDashboard();
+  
+  // Rediriger les utilisateurs de type "farmer" vers le tableau de bord spécifique
+  if (user && user.role === 'farmer') {
+    return <Navigate to="/farmer-dashboard" replace />;
+  }
   const [dateRange, setDateRange] = useState('week');
   const [isRefreshing, setIsRefreshing] = useState(false);
 

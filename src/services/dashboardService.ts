@@ -1,5 +1,5 @@
 import api from './api';
-import { StatisticsResponse, FarmStatistics, BatchStatistics, User } from '../types';
+import { normalizeResponse } from '../utils/apiUtils';
 
 // Types pour les données du dashboard
 export interface DashboardData {
@@ -25,14 +25,17 @@ export interface AdminDashboardData extends DashboardData {
 
 export interface TechnicianDashboardData extends DashboardData {
   managedFarms: number;
-  farmPerformance: FarmStatistics[];
+  farmPerformance: any[];
   qualityTrends: any[];
 }
 
 export interface FarmerDashboardData extends DashboardData {
-  farms: FarmStatistics[];
+  farms: any[];
   totalBatches: number;
   pendingBatches: number;
+  alerts?: any[];
+  weatherData?: any;
+  qualityTrends?: any;
 }
 
 // Service pour le dashboard
@@ -43,9 +46,12 @@ class DashboardService {
       // Utiliser le nouvel endpoint dashboard/user qui retourne les données adaptées au rôle
       const response = await api.get('/dashboard/user/');
       
+      // Normaliser la réponse pour gérer les problèmes de camelCase vs snake_case
+      const normalizedData = normalizeResponse(response.data);
+      
       // Ajouter le rôle de l'utilisateur aux données
       return {
-        ...response.data,
+        ...normalizedData,
         userRole: role
       };
     } catch (error) {
@@ -58,7 +64,7 @@ class DashboardService {
   static async getAdminDashboardData(): Promise<AdminDashboardData> {
     try {
       const response = await api.get('/dashboard/admin/');
-      return response.data;
+      return normalizeResponse(response.data);
     } catch (error) {
       console.error('Erreur lors de la récupération des données admin:', error);
       throw error;
@@ -69,7 +75,7 @@ class DashboardService {
   static async getTechnicianDashboardData(): Promise<TechnicianDashboardData> {
     try {
       const response = await api.get('/dashboard/technician/');
-      return response.data;
+      return normalizeResponse(response.data);
     } catch (error) {
       console.error('Erreur lors de la récupération des données technicien:', error);
       throw error;
@@ -80,7 +86,20 @@ class DashboardService {
   static async getFarmerDashboardData(): Promise<FarmerDashboardData> {
     try {
       const response = await api.get('/dashboard/farmer/');
-      return response.data;
+      
+      // Normaliser la réponse pour gérer les problèmes de camelCase vs snake_case
+      const data = normalizeResponse(response.data);
+      
+      // Convertir les propriétés spécifiques qui pourraient être en snake_case
+      return {
+        ...data,
+        totalBatches: data.totalBatches || data.totalBatches || 0,
+        pendingBatches: data.pendingBatches || data.pendingBatches || 0,
+        farms: data.farms || [],
+        alerts: data.alerts || [],
+        weatherData: data.weatherData || data.weather_data,
+        qualityTrends: data.qualityTrends || data.quality_trends
+      };
     } catch (error) {
       console.error('Erreur lors de la récupération des données agriculteur:', error);
       throw error;
@@ -109,35 +128,38 @@ class DashboardService {
     }
   }
 
-  // Obtenir les statistiques globales
-  static async getGlobalStatistics(): Promise<StatisticsResponse> {
+  // Obtenir les tendances de qualité
+  static async getQualityTrends(params: any): Promise<any> {
     try {
-      const response = await api.get<StatisticsResponse>('plum-classifier/classifications/stats/');
-      return response.data;
+      const response = await api.get('/classifications/quality-trends/', { params });
+      return normalizeResponse(response.data);
     } catch (error) {
-      console.error('Erreur lors de la récupération des statistiques globales:', error);
+      console.error('Erreur lors de la récupération des tendances de qualité:', error);
       throw error;
     }
   }
 
-  // Obtenir les statistiques d'une ferme spécifique
-  static async getFarmStatistics(farmId: number): Promise<FarmStatistics> {
+  // Obtenir les alertes pour l'agriculteur
+  static async getFarmerAlerts(): Promise<any[]> {
     try {
-      const response = await api.get<FarmStatistics>(`farms/${farmId}/stats/`);
-      return response.data;
+      const response = await api.get('/dashboard/farmer/alerts/');
+      return normalizeResponse(response.data);
     } catch (error) {
-      console.error(`Erreur lors de la récupération des statistiques de la ferme ${farmId}:`, error);
+      console.error('Erreur lors de la récupération des alertes:', error);
       throw error;
     }
   }
 
-  // Obtenir les statistiques d'un lot spécifique
-  static async getBatchStatistics(batchId: number): Promise<BatchStatistics> {
+  // Exporter les données du dashboard
+  static async exportDashboardData(format: string = 'csv', params: any = {}): Promise<Blob> {
     try {
-      const response = await api.get<BatchStatistics>(`batches/${batchId}/classifications/`);
+      const response = await api.get(`/dashboard/export/?format=${format}`, {
+        params,
+        responseType: 'blob'
+      });
       return response.data;
     } catch (error) {
-      console.error(`Erreur lors de la récupération des statistiques du lot ${batchId}:`, error);
+      console.error('Erreur lors de l\'exportation des données:', error);
       throw error;
     }
   }
