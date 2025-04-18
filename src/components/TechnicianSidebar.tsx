@@ -13,7 +13,7 @@ import {
   ChevronDown, 
   ChevronRight,
   Calendar,
-  Tool,
+  Wrench, // Replace Tool with Wrench
   AlertTriangle,
   Activity,
   Sliders,
@@ -117,7 +117,7 @@ const TechnicianSidebar: React.FC = () => {
       <div className="px-4 mb-6">
         <div className="flex items-center space-x-3 mb-2">
           <div className="w-10 h-10 rounded-full bg-accent-secondary/20 flex items-center justify-center">
-            <Tool className="h-5 w-5 text-accent-secondary" />
+            <Wrench className="h-5 w-5 text-accent-secondary" /> {/* Replace Tool with Wrench */}
           </div>
           <div>
             <h3 className="font-semibold text-white">

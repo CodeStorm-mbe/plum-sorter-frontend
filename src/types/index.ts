@@ -34,6 +34,7 @@ export interface Farm {
   totalBatches?: number;
   recent_quality?: string;
   quality_trend?: string;
+  is_active: boolean;
 }
 
 export interface PlumBatch {

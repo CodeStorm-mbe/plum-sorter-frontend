@@ -222,13 +222,12 @@ export function BatchesPage() {
   const handleUploadSubmit = (values: typeof uploadForm.values) => {
     if (selectedBatch && selectedFiles.length > 0) {
       const formData = new FormData();
-      
       selectedFiles.forEach((file) => {
         formData.append('images', file);
       });
-      
       formData.append('use_tta', values.use_tta.toString());
-      
+      console.log('FormData entries:', [...formData.entries()]);
+            
       classifyBatchMutation.mutate({
         id: selectedBatch.id,
         formData,
@@ -585,6 +584,7 @@ export function BatchesPage() {
             leftSection={<IconPhoto size={16} />}
             value={selectedFiles}
             onChange={setSelectedFiles}
+            name="images" // Ajoutez cette ligne
             mb="md"
           />
           
