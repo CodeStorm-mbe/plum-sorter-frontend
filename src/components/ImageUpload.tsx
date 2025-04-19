@@ -1,125 +1,83 @@
-"use client"
+import React, { useState } from 'react';
+import { Group, Text, useMantineTheme, rem, Box, Image } from '@mantine/core';
+import { IconUpload, IconPhoto, IconX } from '@tabler/icons-react';
+import { Dropzone, DropzoneProps } from '@mantine/dropzone';
 
-import type React from "react"
-import { useState, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Upload, ImageIcon, FileUp } from "lucide-react"
-
-interface ImageUploadProps {
-  onImageSelected: (file: File, preview: string) => void
-  className?: string
+export interface ImageUploadProps {
+  onImageSelected: ((file: File, preview: string) => void) | ((files: File[]) => void);
+  multiple?: boolean;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelected, className = "" }) => {
-  const [isDragging, setIsDragging] = useState(false)
-  const [isHovering, setIsHovering] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+export function ImageUpload({ onImageSelected, multiple = false, ...props }: ImageUploadProps & Partial<DropzoneProps>) {
+  const theme = useMantineTheme();
+  const [preview, setPreview] = useState<string | null>(null);
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragging(false)
-  }
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragging(false)
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0])
-    }
-  }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0])
-    }
-  }
-
-  const handleBrowseClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click()
-    }
-  }
-
-  const handleFile = (file: File) => {
-    // Vérifier si le fichier est une image
-    if (!file.type.match("image.*")) {
-      alert("Veuillez sélectionner une image.")
-      return
-    }
-
-    // Créer un aperçu de l'image
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      if (e.target && e.target.result) {
-        onImageSelected(file, e.target.result as string)
+  const handleDrop = (files: File[]) => {
+    if (files.length > 0) {
+      if (multiple) {
+        // Si multiple est true, on passe directement le tableau de fichiers
+        (onImageSelected as (files: File[]) => void)(files);
+      } else {
+        // Si multiple est false, on traite un seul fichier avec prévisualisation
+        const file = files[0];
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const previewUrl = reader.result as string;
+          setPreview(previewUrl);
+          (onImageSelected as (file: File, preview: string) => void)(file, previewUrl);
+        };
+        reader.readAsDataURL(file);
       }
     }
-    reader.readAsDataURL(file)
-  }
+  };
 
   return (
-      <motion.div
-          className={`upload-zone relative ${isDragging ? "border-accent-primary" : ""} ${className}`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={handleBrowseClick}
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
-          whileHover={{ scale: 1.01 }}
-          transition={{ duration: 0.2 }}
+    <Box>
+      <Dropzone
+        onDrop={handleDrop}
+        maxSize={5 * 1024 * 1024}
+        accept={['image/png', 'image/jpeg', 'image/jpg']}
+        multiple={multiple}
+        {...props}
       >
-        {/* Background grid animation */}
-        <div className="absolute inset-0 cyber-grid opacity-20" />
+        <Group justify="center" gap="xl" style={{ minHeight: rem(140), pointerEvents: 'none' }}>
+          <Dropzone.Accept>
+            <IconUpload
+              style={{ width: rem(52), height: rem(52), color: 'var(--mantine-color-blue-6)' }}
+              stroke={1.5}
+            />
+          </Dropzone.Accept>
+          <Dropzone.Reject>
+            <IconX
+              style={{ width: rem(52), height: rem(52), color: 'var(--mantine-color-red-6)' }}
+              stroke={1.5}
+            />
+          </Dropzone.Reject>
+          <Dropzone.Idle>
+            <IconPhoto
+              style={{ width: rem(52), height: rem(52), color: 'var(--mantine-color-dimmed)' }}
+              stroke={1.5}
+            />
+          </Dropzone.Idle>
 
-        <AnimatePresence>
-          {(isDragging || isHovering) && (
-              <motion.div
-                  className="absolute inset-0 bg-gradient-to-br from-accent-primary/10 to-accent-secondary/10 rounded-lg"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-              />
-          )}
-        </AnimatePresence>
+          <div>
+            <Text size="xl" inline>
+              Glissez des images ici ou cliquez pour sélectionner
+            </Text>
+            <Text size="sm" c="dimmed" inline mt={7}>
+              Taille maximale: 5 MB. Formats acceptés: PNG, JPEG
+            </Text>
+          </div>
+        </Group>
+      </Dropzone>
 
-        <div className="relative z-10 flex flex-col items-center">
-          <motion.div
-              className="mb-4 p-4 bg-background-light/50 rounded-full"
-              animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-          >
-            {isDragging ? (
-                <FileUp className="h-10 w-10 text-accent-primary" />
-            ) : (
-                <Upload className="h-10 w-10 text-accent-primary" />
-            )}
-          </motion.div>
-
-          <motion.p className="text-white/80 mb-2 font-medium" animate={{ opacity: isDragging ? 1 : 0.8 }}>
-            {isDragging ? "Déposez l'image ici" : "Glissez-déposez une image ici"}
-          </motion.p>
-
-          <p className="text-white/50 text-sm mb-4">ou</p>
-
-          <motion.button className="btn-primary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <span className="flex items-center">
-            <ImageIcon className="h-4 w-4 mr-2" />
-            Parcourir
-          </span>
-          </motion.button>
-
-          <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={handleFileChange} />
-        </div>
-      </motion.div>
-  )
+      {preview && (
+        <Box mt="md">
+          <Image src={preview} alt="Aperçu" radius="md" />
+        </Box>
+      )}
+    </Box>
+  );
 }
 
-export default ImageUpload
+export default ImageUpload;

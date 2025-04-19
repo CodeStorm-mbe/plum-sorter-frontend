@@ -1,38 +1,38 @@
-"use client"
-
-import type React from "react"
-import { Navigate, useLocation } from "react-router-dom"
-import { useAuth } from "../../contexts/AuthContext"
-import LoadingSpinner from "../LoadingSpinner"
+// ProtectedRoute.tsx - Composant pour protéger les routes qui nécessitent une authentification
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import LoadingSpinner from "../LoadingSpinner";
 
 interface ProtectedRouteProps {
-    children: React.ReactNode
-    requireAdmin?: boolean
+  children: React.ReactNode;
+  adminOnly?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false }) => {
-    const { user, isAuthenticated, isLoading } = useAuth()
-    const location = useLocation()
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = false }) => {
+  const { isAuthenticated, isLoading, user } = useAuth();
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <LoadingSpinner size="lg" />
-            </div>
-        )
-    }
+  // Afficher un spinner pendant le chargement
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
-    if (!isAuthenticated) {
-        // Rediriger vers la page de connexion avec l'URL de retour
-        return <Navigate to="/login" state={{ from: location }} replace />
-    }
+  // Rediriger vers la page de connexion si non authentifié
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
-    if (requireAdmin && user?.role !== "admin") {
-        // Rediriger vers la page d'accueil si l'utilisateur n'est pas admin
-        return <Navigate to="/" replace />
-    }
+  // Vérifier les droits d'admin si nécessaire
+  if (adminOnly && user?.role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
 
-    return <>{children}</>
-}
+  // Afficher le contenu protégé
+  return <>{children}</>;
+};
 
-export default ProtectedRoute
+export default ProtectedRoute;

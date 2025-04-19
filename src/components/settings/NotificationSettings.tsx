@@ -6,11 +6,11 @@ import { motion } from "framer-motion"
 import { Bell, AlertCircle } from "lucide-react"
 import Button from "../Button"
 import { useLanguage } from "../../contexts/LanguageContext"
-import { useNotification } from "../../contexts/NotificationContext"
+import { useNotifications } from "../../contexts/NotificationContext"
 
 const NotificationSettings: React.FC = () => {
     const { t } = useLanguage()
-    const { notificationOptions, toggleNotificationOption, saveNotificationPreferences } = useNotification()
+    const { notificationOptions = [], toggleNotificationOption = () => {}, saveNotificationPreferences } = useNotifications()
     const [successMessage, setSuccessMessage] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -40,9 +40,11 @@ const NotificationSettings: React.FC = () => {
     const handleSaveNotifications = async () => {
         setIsLoading(true)
         try {
-            await saveNotificationPreferences()
-            setSuccessMessage(t("settings.notifications.success"))
-            setTimeout(() => setSuccessMessage(null), 3000)
+            if (saveNotificationPreferences) {
+                await saveNotificationPreferences()
+                setSuccessMessage(t("settings.notifications.success"))
+                setTimeout(() => setSuccessMessage(null), 3000)
+            }
         } catch (error) {
             console.error("Erreur lors de la sauvegarde des préférences de notification:", error)
         } finally {

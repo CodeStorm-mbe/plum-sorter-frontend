@@ -1,232 +1,190 @@
-"use client"
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useRole, RoleBased } from '../contexts/RoleContext';
+import { Link } from 'react-router-dom';
+import { ArrowRight, BarChart2, Users, Database, Server, Layers, Image } from 'lucide-react';
 
-import type React from "react"
-import { useState } from "react"
-import { motion } from "framer-motion"
-import Navbar from "../components/Navbar"
-import { Calendar, Download, BarChart2, PieChart, Clock, Database } from "lucide-react"
-import AccuracyChart from "../components/AccuracyChart"
-import CategoryDistribution from "../components/CategoryDistribution"
-import RecentImagesTable from "../components/RecentImagesTable"
-import Button from "../components/Button"
-import AnimatedCard from "../components/AnimatedCard"
-import PageTransition from "../components/PageTransition"
-
-const DashboardPage: React.FC = () => {
-  const [activeFilter, setActiveFilter] = useState("all")
-  const [dateRange, setDateRange] = useState("week")
-
-  // Données fictives pour les graphiques
-  const accuracyData = [
-    { name: "Lun", accuracy: 92 },
-    { name: "Mar", accuracy: 94 },
-    { name: "Mer", accuracy: 93 },
-    { name: "Jeu", accuracy: 95 },
-    { name: "Ven", accuracy: 97 },
-    { name: "Sam", accuracy: 96 },
-    { name: "Dim", accuracy: 98 },
-  ]
-
-  const categoryData = [
-    { name: "Bonne qualité", value: 45, color: "#05ffa1" },
-    { name: "Non mûre", value: 20, color: "#ffe202" },
-    { name: "Tachetée", value: 15, color: "#ff9e00" },
-    { name: "Fissurée", value: 10, color: "#ff2a6d" },
-    { name: "Meurtrie", value: 7, color: "#b537f2" },
-    { name: "Pourrie", value: 3, color: "#ff3860" },
-  ]
-
-  const recentImages = [
-    {
-      id: 1,
-      thumbnail: "https://via.placeholder.com/80x80?text=Prune+1",
-      category: "Bonne qualité",
-      confidence: 98,
-      date: "10/04/2025",
-    },
-    {
-      id: 2,
-      thumbnail: "https://via.placeholder.com/80x80?text=Prune+2",
-      category: "Non mûre",
-      confidence: 95,
-      date: "10/04/2025",
-    },
-    {
-      id: 3,
-      thumbnail: "https://via.placeholder.com/80x80?text=Prune+3",
-      category: "Tachetée",
-      confidence: 92,
-      date: "09/04/2025",
-    },
-    {
-      id: 4,
-      thumbnail: "https://via.placeholder.com/80x80?text=Prune+4",
-      category: "Fissurée",
-      confidence: 97,
-      date: "09/04/2025",
-    },
-    {
-      id: 5,
-      thumbnail: "https://via.placeholder.com/80x80?text=Prune+5",
-      category: "Meurtrie",
-      confidence: 91,
-      date: "08/04/2025",
-    },
-    {
-      id: 6,
-      thumbnail: "https://via.placeholder.com/80x80?text=Prune+6",
-      category: "Pourrie",
-      confidence: 99,
-      date: "08/04/2025",
-    },
-  ]
-
-  return (
-      <PageTransition>
-        <div className="min-h-screen">
-          <Navbar />
-
-          <div className="container mx-auto pt-28 pb-16 px-4 md:px-8">
-            <motion.div
-                className="flex flex-col md:flex-row items-center justify-between mb-8"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-            >
-              <h1 className="text-3xl md:text-4xl font-title font-bold mb-4 md:mb-0 bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
-                Dashboard
-              </h1>
-
-              <div className="flex flex-wrap gap-4">
-                <motion.div
-                    className="relative"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                >
-                  <select
-                      className="bg-background-light/50 border border-white/10 text-white rounded-md px-4 py-2 pr-8 appearance-none focus:outline-none focus:ring-1 focus:ring-accent-primary"
-                      value={dateRange}
-                      onChange={(e) => setDateRange(e.target.value)}
-                  >
-                    <option value="day">Aujourd'hui</option>
-                    <option value="week">Cette semaine</option>
-                    <option value="month">Ce mois</option>
-                    <option value="year">Cette année</option>
-                  </select>
-                  <Calendar className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-accent-primary pointer-events-none" />
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                  <Button variant="outline" icon={<Download className="h-4 w-4 mr-2" />} size="md">
-                    Exporter
-                  </Button>
-                </motion.div>
-              </div>
-            </motion.div>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {[
-                {
-                  title: "Images analysées",
-                  value: "1,248",
-                  icon: <Database className="h-5 w-5" />,
-                  color: "from-accent-primary to-accent-secondary",
-                },
-                {
-                  title: "Précision moyenne",
-                  value: "97.8%",
-                  icon: <BarChart2 className="h-5 w-5" />,
-                  color: "from-accent-secondary to-accent-tertiary",
-                },
-                {
-                  title: "Temps moyen",
-                  value: "0.8s",
-                  icon: <Clock className="h-5 w-5" />,
-                  color: "from-accent-tertiary to-accent-primary",
-                },
-                {
-                  title: "Catégories",
-                  value: "6",
-                  icon: <PieChart className="h-5 w-5" />,
-                  color: "from-accent-primary to-accent-secondary",
-                },
-              ].map((stat, index) => (
-                  <motion.div
-                      key={index}
-                      className="card p-4"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.1 * index }}
-                      whileHover={{ y: -5, boxShadow: "0 10px 30px -10px rgba(0, 229, 255, 0.2)" }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-white/60 text-sm">{stat.title}</p>
-                        <h3
-                            className={`text-2xl font-bold mt-1 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}
-                        >
-                          {stat.value}
-                        </h3>
-                      </div>
-                      <div className="p-2 rounded-full bg-background-light/50">
-                        <div className="text-accent-primary">{stat.icon}</div>
-                      </div>
-                    </div>
-                  </motion.div>
-              ))}
-            </div>
-
-            {/* Graphiques */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-              <AnimatedCard delay={0.1}>
-                <div className="flex items-center mb-4">
-                  <BarChart2 className="h-5 w-5 text-accent-primary mr-2" />
-                  <h2 className="text-xl font-title font-semibold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                    Évolution de la précision
-                  </h2>
-                </div>
-                <AccuracyChart data={accuracyData} />
-              </AnimatedCard>
-
-              <AnimatedCard delay={0.2}>
-                <div className="flex items-center mb-4">
-                  <PieChart className="h-5 w-5 text-accent-secondary mr-2" />
-                  <h2 className="text-xl font-title font-semibold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                    Répartition par catégorie
-                  </h2>
-                </div>
-                <CategoryDistribution data={categoryData} />
-              </AnimatedCard>
-            </div>
-
-            {/* Tableau des dernières images */}
-            <AnimatedCard delay={0.3}>
-              <div className="flex items-center mb-6">
-                <Database className="h-5 w-5 text-accent-tertiary mr-2" />
-                <h2 className="text-xl font-title font-semibold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                  Dernières images traitées
-                </h2>
-              </div>
-
-              <RecentImagesTable images={recentImages} activeFilter={activeFilter} onFilterChange={setActiveFilter} />
-            </AnimatedCard>
-          </div>
-
-          {/* Footer */}
-          <footer className="py-8 px-4 md:px-8 lg:px-16 bg-background-light/50 backdrop-blur-md border-t border-white/5">
-            <div className="container mx-auto text-center">
-              <p className="text-white/60">© 2025 TriPrune - Projet JCIA Hackathon</p>
-            </div>
-          </footer>
-        </div>
-      </PageTransition>
-  )
+interface DashboardCardProps {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  to: string;
+  color: string;
+  delay?: number;
 }
 
-export default DashboardPage
+const DashboardCard: React.FC<DashboardCardProps> = ({ 
+  title, 
+  description, 
+  icon, 
+  to, 
+  color,
+  delay = 0 
+}) => {
+  return (
+    <motion.div
+      className={`card p-6 border ${color} hover:shadow-lg transition-all duration-300`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      whileHover={{ y: -5 }}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div className={`p-3 rounded-lg ${color.replace('border-', 'bg-').replace('/20', '/10')}`}>
+          {icon}
+        </div>
+        <Link to={to} className="text-white/60 hover:text-white transition-colors">
+          <ArrowRight className="h-5 w-5" />
+        </Link>
+      </div>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-white/60 mb-4">{description}</p>
+      <Link 
+        to={to} 
+        className={`inline-flex items-center text-sm font-medium ${color.replace('border-', 'text-').replace('/20', '')} hover:underline`}
+      >
+        Accéder
+        <ArrowRight className="h-4 w-4 ml-1" />
+      </Link>
+    </motion.div>
+  );
+};
+
+const DashboardPage: React.FC = () => {
+  const { isAdmin, isTechnician, isFarmer } = useRole();
+
+  // Rediriger vers le dashboard spécifique au rôle
+  React.useEffect(() => {
+    if (isAdmin) {
+      window.location.href = '/admin-dashboard';
+    } else if (isTechnician) {
+      window.location.href = '/technician-dashboard';
+    } else if (isFarmer) {
+      window.location.href = '/farmer-dashboard';
+    }
+  }, [isAdmin, isTechnician, isFarmer]);
+
+  return (
+    <div className="container mx-auto pt-28 pb-16 px-4 md:px-8">
+      <motion.div
+        className="mb-8"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h1 className="text-3xl md:text-4xl font-title font-bold mb-4 bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
+          Tableau de bord
+        </h1>
+        <p className="text-white/60 max-w-3xl">
+          Bienvenue sur le tableau de bord de TriPrune. Accédez à toutes les fonctionnalités du système de classification des prunes.
+        </p>
+      </motion.div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <RoleBased requiredRole={['admin', 'technician']}>
+          <DashboardCard
+            title="Statistiques"
+            description="Consultez les statistiques détaillées sur les classifications et les performances."
+            icon={<BarChart2 className="h-6 w-6 text-blue-500" />}
+            to="/statistics"
+            color="border-blue-500/20"
+            delay={0.1}
+          />
+        </RoleBased>
+
+        <RoleBased requiredRole="admin">
+          <DashboardCard
+            title="Gestion des utilisateurs"
+            description="Gérez les utilisateurs, leurs rôles et leurs permissions."
+            icon={<Users className="h-6 w-6 text-purple-500" />}
+            to="/admin/users"
+            color="border-purple-500/20"
+            delay={0.2}
+          />
+        </RoleBased>
+
+        <DashboardCard
+          title="Fermes"
+          description="Consultez et gérez les fermes enregistrées dans le système."
+          icon={<Layers className="h-6 w-6 text-green-500" />}
+          to="/farms"
+          color="border-green-500/20"
+          delay={0.3}
+        />
+
+        <DashboardCard
+          title="Classifications"
+          description="Accédez aux classifications existantes ou créez-en de nouvelles."
+          icon={<Image className="h-6 w-6 text-amber-500" />}
+          to="/classifications"
+          color="border-amber-500/20"
+          delay={0.4}
+        />
+
+        <RoleBased requiredRole="admin">
+          <DashboardCard
+            title="Gestion des modèles"
+            description="Gérez les modèles de classification et leurs versions."
+            icon={<Database className="h-6 w-6 text-rose-500" />}
+            to="/admin/models"
+            color="border-rose-500/20"
+            delay={0.5}
+          />
+        </RoleBased>
+
+        <RoleBased requiredRole="admin">
+          <DashboardCard
+            title="État du système"
+            description="Consultez l'état et les performances du système."
+            icon={<Server className="h-6 w-6 text-cyan-500" />}
+            to="/admin/system"
+            color="border-cyan-500/20"
+            delay={0.6}
+          />
+        </RoleBased>
+      </div>
+
+      <motion.div
+        className="card p-6 bg-gradient-to-br from-accent-primary/20 to-accent-secondary/5 border border-accent-primary/20"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.7 }}
+      >
+        <h2 className="text-2xl font-semibold mb-4">Accès rapide</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <RoleBased requiredRole={['admin', 'technician', 'farmer']}>
+            <Link 
+              to="/classifications/new" 
+              className="p-4 bg-background-light/30 rounded-lg hover:bg-background-light/50 transition-colors"
+            >
+              <h3 className="font-semibold mb-2">Nouvelle classification</h3>
+              <p className="text-white/60 text-sm">Classifier de nouvelles images de prunes.</p>
+            </Link>
+          </RoleBased>
+
+          <RoleBased requiredRole={['admin', 'technician']}>
+            <Link 
+              to="/reports" 
+              className="p-4 bg-background-light/30 rounded-lg hover:bg-background-light/50 transition-colors"
+            >
+              <h3 className="font-semibold mb-2">Rapports</h3>
+              <p className="text-white/60 text-sm">Générer et exporter des rapports détaillés.</p>
+            </Link>
+          </RoleBased>
+
+          <RoleBased requiredRole={['admin', 'farmer']}>
+            <Link 
+              to="/farms/new" 
+              className="p-4 bg-background-light/30 rounded-lg hover:bg-background-light/50 transition-colors"
+            >
+              <h3 className="font-semibold mb-2">Nouvelle ferme</h3>
+              <p className="text-white/60 text-sm">Enregistrer une nouvelle ferme dans le système.</p>
+            </Link>
+          </RoleBased>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default DashboardPage;

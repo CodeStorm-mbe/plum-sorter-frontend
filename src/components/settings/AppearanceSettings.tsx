@@ -6,7 +6,7 @@ import { motion } from "framer-motion"
 import { Palette, Sun, Moon, Monitor, Check, AlertCircle } from "lucide-react"
 import Button from "../Button"
 import { useLanguage } from "../../contexts/LanguageContext"
-import { useTheme, type Theme, type AccentColor } from "../../contexts/ThemeContext"
+import { useTheme, type Theme, type AccentColor} from "../../contexts/ThemeContext"
 
 const AppearanceSettings: React.FC = () => {
     const { t } = useLanguage()

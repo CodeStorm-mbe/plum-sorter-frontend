@@ -1,364 +1,427 @@
-"use client"
-
-import type React from "react"
-import { useState, useCallback } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import Navbar from "../components/Navbar"
-import ImageUpload from "../components/ImageUpload"
-import ImagePreview from "../components/ImagePreview"
-import Button from "../components/Button"
-import CategoryBadge from "../components/CategoryBadge"
-import ConfidenceBar from "../components/ConfidenceBar"
-import PageTransition from "../components/PageTransition"
-import { Eye, EyeOff, Info, AlertCircle, Upload } from "lucide-react"
-
-interface ResultProps {
-  category: string
-  confidence: number
-  showHeatmap: boolean
-  onToggleHeatmap: () => void
-}
-
-const ResultDisplay: React.FC<ResultProps> = ({ category, confidence, showHeatmap, onToggleHeatmap }) => {
-  return (
-      <motion.div
-          className="card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-      >
-        <h2 className="text-xl font-title font-semibold mb-6 flex items-center">
-          <Info className="h-5 w-5 mr-2 text-accent-primary" />
-          <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-          Résultats de l'analyse
-        </span>
-        </h2>
-
-        <div className="flex flex-col md:flex-row items-start gap-6">
-          <div className="w-full md:w-1/2">
-            <motion.div
-                className="mb-4"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <p className="text-white/70 mb-2">Catégorie détectée:</p>
-              <div className="flex items-center">
-                <CategoryBadge category={category} size="lg" className="capitalize" />
-              </div>
-            </motion.div>
-
-            <motion.div
-                className="mb-6"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <p className="text-white/70 mb-2">Score de confiance:</p>
-              <ConfidenceBar value={confidence} />
-            </motion.div>
-
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-            >
-              <Button
-                  variant={showHeatmap ? "outline" : "primary"}
-                  onClick={onToggleHeatmap}
-                  icon={showHeatmap ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  size="md"
-              >
-                {showHeatmap ? "Masquer l'explication" : "Voir l'explication"}
-              </Button>
-            </motion.div>
-          </div>
-
-          <motion.div
-              className="w-full md:w-1/2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <div className="card bg-background-light/50 p-4 h-full">
-              <h3 className="font-medium mb-4 flex items-center">
-                <AlertCircle className="h-5 w-5 mr-2 text-accent-primary" />
-                <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                Caractéristiques de cette catégorie:
-              </span>
-              </h3>
-
-              <AnimatePresence mode="wait">
-                <motion.div
-                    key={category}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                >
-                  <ul className="space-y-2 text-white/80">
-                    {category === "bonne qualité" && (
-                        <>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Couleur uniforme et vibrante</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Surface lisse sans défauts</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Forme régulière et symétrique</span>
-                          </li>
-                        </>
-                    )}
-                    {category === "non mûre" && (
-                        <>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Couleur plus claire que la normale</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Texture ferme</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Manque de développement complet</span>
-                          </li>
-                        </>
-                    )}
-                    {category === "tachetée" && (
-                        <>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Présence de taches sur la surface</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Motifs irréguliers de décoloration</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Texture potentiellement inégale</span>
-                          </li>
-                        </>
-                    )}
-                    {category === "fissurée" && (
-                        <>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Présence de fissures visibles</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Ruptures dans la peau du fruit</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Possible exposition de la chair</span>
-                          </li>
-                        </>
-                    )}
-                    {category === "meurtrie" && (
-                        <>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Zones de décoloration sombre</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Dépressions sur la surface</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Signes d'impact ou de pression</span>
-                          </li>
-                        </>
-                    )}
-                    {category === "pourrie" && (
-                        <>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Zones de décomposition avancée</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Couleur brune ou noirâtre</span>
-                          </li>
-                          <li className="flex items-start">
-                            <span className="text-accent-primary mr-2">•</span>
-                            <span>Texture molle et détériorée</span>
-                          </li>
-                        </>
-                    )}
-                  </ul>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        </div>
-      </motion.div>
-  )
-}
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Card, PageHeader, PageContainer, Section, Grid } from '../components/UIComponents';
+import { useAuth } from '../contexts/AuthContext';
+import { useRole, RoleBased } from '../contexts/RoleContext';
+import { ClassificationService, OptimizationService } from '../services';
+import { Upload, Image, Check, AlertTriangle, Info, RefreshCw } from 'lucide-react';
+import Button from '../components/Button';
+import Navbar from '../components/Navbar';
 
 const PredictionPage: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [result, setResult] = useState<{
-    category: string
-    confidence: number
-    showHeatmap: boolean
-  } | null>(null)
+  const { user } = useAuth();
+  const { hasPermission } = useRole();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [result, setResult] = useState<any | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
-  // Fonction pour gérer la sélection d'image
-  const handleImageSelected = useCallback((file: File, preview: string) => {
-    setFile(file)
-    setPreview(preview)
-    setResult(null)
-  }, [])
-
-  // Fonction pour analyser l'image
-  const analyzeImage = useCallback(() => {
-    if (!file) return
-
-    setIsAnalyzing(true)
-
-    // Simuler un appel API (à remplacer par un vrai appel API)
-    setTimeout(() => {
-      // Résultats fictifs pour la démonstration
-      const categories = ["bonne qualité", "non mûre", "tachetée", "fissurée", "meurtrie", "pourrie"]
-      const randomCategory = categories[Math.floor(Math.random() * categories.length)]
-      const randomConfidence = 70 + Math.floor(Math.random() * 30) // Entre 70% et 99%
-
-      setResult({
-        category: randomCategory,
-        confidence: randomConfidence,
-        showHeatmap: false,
-      })
-
-      setIsAnalyzing(false)
-    }, 2000)
-  }, [file])
-
-  // Fonction pour afficher/masquer la heatmap
-  const toggleHeatmap = useCallback(() => {
-    if (result) {
-      setResult({
-        ...result,
-        showHeatmap: !result.showHeatmap,
-      })
+  // Réinitialiser la prévisualisation lorsque le fichier change
+  useEffect(() => {
+    if (!selectedFile) {
+      setPreview(null);
+      return;
     }
-  }, [result])
 
-  // Fonction pour réinitialiser
-  const resetImage = useCallback(() => {
-    setFile(null)
-    setPreview(null)
-    setResult(null)
-  }, [])
+    const objectUrl = URL.createObjectURL(selectedFile);
+    setPreview(objectUrl);
+
+    // Nettoyer l'URL de l'objet lorsque le composant est démonté
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedFile]);
+
+  // Gérer la sélection de fichier
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      setSelectedFile(null);
+      return;
+    }
+
+    const file = e.target.files[0];
+    setSelectedFile(file);
+    setResult(null);
+    setError(null);
+  };
+
+  // Gérer le glisser-déposer
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) {
+      return;
+    }
+
+    const file = e.dataTransfer.files[0];
+    setSelectedFile(file);
+    setResult(null);
+    setError(null);
+  };
+
+  // Empêcher le comportement par défaut du navigateur
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  // Soumettre l'image pour classification
+  const handleSubmit = async () => {
+    if (!selectedFile) {
+      setError("Veuillez sélectionner une image à classifier.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setUploadProgress(0);
+
+    try {
+      // Simuler une progression d'upload
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          return prev + 10;
+        });
+      }, 300);
+
+      // Utiliser le service d'optimisation pour l'upload
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+
+      // Dans un cas réel, nous utiliserions le service
+      // const response = await ClassificationService.classifyImage(formData);
+      
+      // Simuler une réponse pour la démonstration
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      const mockResponse = {
+        id: Math.floor(Math.random() * 1000),
+        class_name: "Excellente",
+        confidence_score: 0.92,
+        quality_score: 87,
+        processing_time: 1.23,
+        image_url: preview,
+        created_at: new Date().toISOString(),
+        details: {
+          color_score: 0.95,
+          shape_score: 0.89,
+          size_score: 0.92,
+          texture_score: 0.85
+        }
+      };
+      
+      setResult(mockResponse);
+    } catch (err: any) {
+      console.error('Erreur lors de la classification:', err);
+      setError(err.message || "Une erreur est survenue lors de la classification de l'image.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Réinitialiser le formulaire
+  const handleReset = () => {
+    setSelectedFile(null);
+    setPreview(null);
+    setResult(null);
+    setError(null);
+    setUploadProgress(0);
+  };
+
+  // Obtenir la couleur en fonction de la classe
+  const getClassColor = (className: string) => {
+    switch (className.toLowerCase()) {
+      case 'excellente':
+        return 'text-green-400 bg-green-500/20';
+      case 'bonne':
+        return 'text-blue-400 bg-blue-500/20';
+      case 'moyenne':
+        return 'text-yellow-400 bg-yellow-500/20';
+      case 'faible':
+        return 'text-red-400 bg-red-500/20';
+      default:
+        return 'text-white/80 bg-white/10';
+    }
+  };
 
   return (
-      <PageTransition>
-        <div className="min-h-screen">
-          <Navbar />
+    <motion.div
+      className="min-h-screen bg-background"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <Navbar />
 
-          <motion.div
-              className="container mx-auto pt-28 pb-16 px-4 md:px-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-          >
-            <motion.h1
-                className="text-3xl md:text-4xl font-title font-bold text-center mb-2"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-            >
-            <span className="bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
-              Analyse de prunes
-            </span>
-            </motion.h1>
+      <PageContainer>
+        <PageHeader
+          title="Classification d'image"
+          description="Téléchargez une image de prune pour obtenir une classification automatique de sa qualité."
+        />
 
-            <motion.p
-                className="text-center text-white/70 mb-8 max-w-2xl mx-auto"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              Téléchargez une image de prune pour l'analyser avec notre intelligence artificielle avancée
-            </motion.p>
-
-            <div className="max-w-4xl mx-auto">
-              <motion.div
-                  className="card mb-8"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
+        <Grid cols={2} gap={8}>
+          {/* Zone de téléchargement */}
+          <Section>
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Télécharger une image</h2>
+              
+              {/* Zone de glisser-déposer */}
+              <div
+                className={`border-2 border-dashed rounded-lg p-8 text-center mb-4 transition-colors ${
+                  selectedFile ? 'border-accent-primary/50 bg-accent-primary/5' : 'border-white/20 hover:border-white/40'
+                }`}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
               >
-                <h2 className="text-xl font-title font-semibold mb-4 flex items-center">
-                  <Upload className="h-5 w-5 mr-2 text-accent-primary" />
-                  <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                  Téléchargez une image de prune
-                </span>
-                </h2>
-
-                <AnimatePresence mode="wait">
-                  {!preview ? (
-                      <motion.div
-                          key="upload"
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          transition={{ duration: 0.3 }}
-                      >
-                        <ImageUpload onImageSelected={handleImageSelected} />
-                      </motion.div>
-                  ) : (
-                      <motion.div
-                          key="preview"
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          transition={{ duration: 0.3 }}
-                      >
-                        <ImagePreview
-                            preview={preview}
-                            onReset={resetImage}
-                            onAnalyze={analyzeImage}
-                            isAnalyzing={isAnalyzing}
-                            showHeatmap={result?.showHeatmap || false}
-                        />
-                      </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-
-              {/* Résultats */}
-              <AnimatePresence>
-                {result && (
-                    <ResultDisplay
-                        category={result.category}
-                        confidence={result.confidence}
-                        showHeatmap={result.showHeatmap}
-                        onToggleHeatmap={toggleHeatmap}
+                {preview ? (
+                  <div className="flex flex-col items-center">
+                    <img
+                      src={preview}
+                      alt="Aperçu"
+                      className="max-h-64 max-w-full rounded-lg mb-4"
                     />
+                    <p className="text-white/60 text-sm">
+                      {selectedFile?.name} ({selectedFile && (selectedFile.size / 1024).toFixed(1)} KB)
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <Upload className="h-12 w-12 text-white/40 mb-4" />
+                    <p className="text-white/80 mb-2">Glissez et déposez une image ici</p>
+                    <p className="text-white/60 text-sm mb-4">ou</p>
+                    <label className="cursor-pointer bg-accent-primary/20 hover:bg-accent-primary/30 text-accent-primary px-4 py-2 rounded-md transition-colors">
+                      Parcourir les fichiers
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
                 )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
+              </div>
 
-          {/* Footer */}
-          <footer className="py-8 px-4 md:px-8 lg:px-16 bg-background-light/50 backdrop-blur-md border-t border-white/5">
-            <div className="container mx-auto text-center">
-              <p className="text-white/60">© 2025 TriPrune - Projet JCIA Hackathon</p>
+              {/* Boutons d'action */}
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={handleSubmit}
+                  disabled={!selectedFile || isLoading}
+                  className="flex-1"
+                >
+                  {isLoading ? 'Classification en cours...' : 'Classifier l\'image'}
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="md"
+                  onClick={handleReset}
+                  disabled={isLoading}
+                >
+                  Réinitialiser
+                </Button>
+              </div>
+
+              {/* Barre de progression */}
+              {isLoading && (
+                <div className="mt-4">
+                  <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-accent-primary transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-white/60 text-sm mt-2 text-center">
+                    {uploadProgress < 100 ? 'Téléchargement en cours...' : 'Analyse en cours...'}
+                  </p>
+                </div>
+              )}
+
+              {/* Message d'erreur */}
+              {error && (
+                <div className="mt-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 flex items-start">
+                  <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+                  <p>{error}</p>
+                </div>
+              )}
+            </Card>
+          </Section>
+
+          {/* Résultats de classification */}
+          <Section>
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Résultats de classification</h2>
+              
+              {!result && !isLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 text-white/60">
+                  <Image className="h-16 w-16 mb-4 text-white/40" />
+                  <p>Téléchargez une image pour voir les résultats de classification</p>
+                </div>
+              ) : isLoading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-primary mb-4"></div>
+                  <p className="text-white/60">Analyse de l'image en cours...</p>
+                </div>
+              ) : result && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {/* Résultat principal */}
+                  <div className="flex items-center justify-between mb-6 p-4 bg-background-light/30 rounded-lg">
+                    <div>
+                      <p className="text-white/60 mb-1">Qualité détectée</p>
+                      <div className="flex items-center">
+                        <span className={`text-2xl font-bold px-3 py-1 rounded ${getClassColor(result.class_name)}`}>
+                          {result.class_name}
+                        </span>
+                        <span className="ml-3 text-white/60">
+                          ({(result.confidence_score * 100).toFixed(1)}% de confiance)
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-white/60 mb-1">Score de qualité</p>
+                      <p className="text-3xl font-bold">{result.quality_score}/100</p>
+                    </div>
+                  </div>
+
+                  {/* Détails de l'analyse */}
+                  <h3 className="text-lg font-semibold mb-3">Détails de l'analyse</h3>
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    <div className="p-3 bg-background-light/30 rounded-lg">
+                      <p className="text-white/60 text-sm">Couleur</p>
+                      <div className="flex justify-between items-center mt-1">
+                        <div className="w-full bg-white/10 rounded-full h-2 mr-3">
+                          <div
+                            className="bg-green-500 h-2 rounded-full"
+                            style={{ width: `${result.details.color_score * 100}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-white font-medium">{(result.details.color_score * 100).toFixed(0)}%</span>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-background-light/30 rounded-lg">
+                      <p className="text-white/60 text-sm">Forme</p>
+                      <div className="flex justify-between items-center mt-1">
+                        <div className="w-full bg-white/10 rounded-full h-2 mr-3">
+                          <div
+                            className="bg-blue-500 h-2 rounded-full"
+                            style={{ width: `${result.details.shape_score * 100}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-white font-medium">{(result.details.shape_score * 100).toFixed(0)}%</span>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-background-light/30 rounded-lg">
+                      <p className="text-white/60 text-sm">Taille</p>
+                      <div className="flex justify-between items-center mt-1">
+                        <div className="w-full bg-white/10 rounded-full h-2 mr-3">
+                          <div
+                            className="bg-purple-500 h-2 rounded-full"
+                            style={{ width: `${result.details.size_score * 100}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-white font-medium">{(result.details.size_score * 100).toFixed(0)}%</span>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-background-light/30 rounded-lg">
+                      <p className="text-white/60 text-sm">Texture</p>
+                      <div className="flex justify-between items-center mt-1">
+                        <div className="w-full bg-white/10 rounded-full h-2 mr-3">
+                          <div
+                            className="bg-amber-500 h-2 rounded-full"
+                            style={{ width: `${result.details.texture_score * 100}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-white font-medium">{(result.details.texture_score * 100).toFixed(0)}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Informations supplémentaires */}
+                  <div className="p-3 bg-background-light/20 border border-white/10 rounded-lg text-white/80 flex items-start mb-4">
+                    <Info className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5 text-accent-primary" />
+                    <p className="text-sm">
+                      Cette classification a été réalisée en {result.processing_time.toFixed(2)} secondes. 
+                      Les résultats sont basés sur l'analyse de la couleur, de la forme, de la taille et de la texture de la prune.
+                    </p>
+                  </div>
+
+                  {/* Boutons d'action */}
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      variant="outline"
+                      size="md"
+                      icon={<RefreshCw className="h-4 w-4 mr-2" />}
+                      onClick={handleReset}
+                    >
+                      Nouvelle classification
+                    </Button>
+                    
+                    <Button
+                      variant="primary"
+                      size="md"
+                      href={`/classifications/${result.id}`}
+                    >
+                      Voir les détails complets
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </Card>
+          </Section>
+        </Grid>
+
+        {/* Informations sur la classification */}
+        <Section title="À propos de la classification" delay={0.2}>
+          <Card className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Comment ça marche ?</h3>
+                <p className="text-white/60">
+                  Notre système utilise un modèle d'intelligence artificielle avancé pour analyser les images de prunes
+                  et déterminer leur qualité. Le modèle a été entraîné sur des milliers d'images de prunes de différentes
+                  qualités pour garantir une précision optimale.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Critères d'évaluation</h3>
+                <p className="text-white/60">
+                  La classification est basée sur plusieurs critères : la couleur, la forme, la taille et la texture de la prune.
+                  Chaque critère contribue au score global de qualité, qui détermine la classe finale (Excellente, Bonne, Moyenne, Faible).
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Conseils pour de meilleurs résultats</h3>
+                <p className="text-white/60">
+                  Pour obtenir les meilleurs résultats, assurez-vous que l'image est bien éclairée, que la prune est centrée
+                  dans l'image et qu'il n'y a pas d'autres objets qui pourraient perturber l'analyse.
+                </p>
+              </div>
             </div>
-          </footer>
+          </Card>
+        </Section>
+      </PageContainer>
+
+      {/* Footer */}
+      <footer className="py-8 px-4 md:px-8 lg:px-16 bg-background-light/50 backdrop-blur-md border-t border-white/5">
+        <div className="container mx-auto text-center">
+          <p className="text-white/60">© 2025 TriPrune - Système de classification des prunes</p>
         </div>
-      </PageTransition>
-  )
-}
+      </footer>
+    </motion.div>
+  );
+};
 
-export default PredictionPage
+export default PredictionPage;

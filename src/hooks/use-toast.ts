@@ -6,7 +6,7 @@ import * as React from "react"
 import type {
   ToastActionElement,
   ToastProps,
-} from "@/components/ui/toast"
+} from "../components/ui/toast"
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -16,6 +16,14 @@ type ToasterToast = ToastProps & {
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+}
+
+type ToastType = 'success' | 'error' | 'warning' | 'info';
+
+interface ToastOptions {
+  type: ToastType;
+  title: string;
+  message: string;
 }
 
 const actionTypes = {
@@ -184,9 +192,21 @@ function useToast() {
     }
   }, [state])
 
+  // Ajout de la fonction showToast pour compatibilité
+  const showToast = (options: ToastOptions) => {
+    const { type, title, message } = options;
+    
+    return toast({
+      title: title,
+      description: message,
+      variant: type === 'error' ? 'destructive' : 'default',
+    });
+  };
+
   return {
     ...state,
     toast,
+    showToast,
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   }
 }

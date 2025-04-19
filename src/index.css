@@ -1,10 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --mantine-color-plum-0: #f9f0ff;
+  --mantine-color-plum-1: #efd9ff;
+  --mantine-color-plum-2: #ddb3ff;
+  --mantine-color-plum-3: #ca8cff;
+  --mantine-color-plum-4: #b866ff;
+  --mantine-color-plum-5: #aa4dff;
+  --mantine-color-plum-6: #a23dff;
+  --mantine-color-plum-7: #8f2ce0;
+  --mantine-color-plum-8: #7e28c9;
+  --mantine-color-plum-9: #6c22b0;
+}
+
 @layer base {
   :root {
-    --radius: 0.5rem
-  ;
+    --radius: 0.5rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -12,7 +27,9 @@
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%}
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+  
   .dark {
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -21,7 +38,82 @@
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
+@layer components {
+  .card {
+    @apply bg-background-light/50 border border-white/10 rounded-lg shadow-sm;
+  }
+  
+  .btn-primary {
+    @apply bg-accent-primary hover:bg-accent-primary/90 text-white font-medium py-2 px-4 rounded-md transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent border border-white/20 hover:border-white/40 text-white font-medium py-2 px-4 rounded-md transition-colors;
+  }
+  
+  .btn-danger {
+    @apply bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md transition-colors;
+  }
+}
+
+/* Styles globaux */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+}
+
+.font-title {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Styles pour les composants Mantine */
+.mantine-AppShell-main {
+  background-color: #121212;
+  color: white;
+}
+
+.mantine-NavLink-root {
+  border-radius: 0.375rem;
+}
+
+.mantine-NavLink-root[data-active] {
+  background-color: var(--mantine-color-plum-7);
+}
+
+.mantine-Button-root {
+  font-weight: 500;
+}
+
+.mantine-Card-root {
+  background-color: rgba(30, 30, 30, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+}
+
+/* Styles pour les transitions de page */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.page-transition-exit {
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transition: opacity 300ms;
+}

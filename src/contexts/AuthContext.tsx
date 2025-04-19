@@ -1,212 +1,298 @@
-"use client"
+import { useContext, createContext, ReactNode, useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { User, AuthContextType } from '../types';
+import api from '../services/api';
+import { notifications } from '../utils/notifications';
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-
-// Types pour les utilisateurs et l'authentification
-export interface User {
-    id: string
-    email: string
-    name: string
-    role: "user" | "admin"
-    avatar?: string
-    createdAt: string
-}
-
-interface AuthContextType {
-    user: User | null
-    isLoading: boolean
-    isAuthenticated: boolean
-    login: (email: string, password: string) => Promise<void>
-    register: (name: string, email: string, password: string) => Promise<void>
-    logout: () => void
-    updateProfile: (userData: Partial<User>) => Promise<void>
-    error: string | null
-    clearError: () => void
-}
-
-// Création du contexte
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+// Créer le contexte d'authentification
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  isAuthenticated: false,
+  isLoading: false,
+  login: async () => {},
+  register: async () => {},
+  logout: async () => {},
+  resetPassword: async () => {},
+  verifyEmail: async () => {},
+  resendVerificationEmail: async () => {},
+  updateProfile: async () => {},
+  changePassword: async () => {},
+});
 
 // Hook personnalisé pour utiliser le contexte d'authentification
-export const useAuth = () => {
-    const context = useContext(AuthContext)
-    if (context === undefined) {
-        throw new Error("useAuth doit être utilisé à l'intérieur d'un AuthProvider")
+export const useAuth = () => useContext(AuthContext);
+
+// Fournisseur du contexte d'authentification
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Vérifier si l'utilisateur est authentifié au chargement
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        setIsLoading(true);
+        const token = localStorage.getItem('token');
+        
+        if (token) {
+          // Vérifier la validité du token
+          const response = await api.get('/users/me/');
+          setUser(response.data);
+        }
+      } catch (error) {
+        // Token invalide ou expiré
+        localStorage.removeItem('token');
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  // Connexion
+  const login = async (username: string, password: string) => {
+    try {
+      setIsLoading(true);
+      const response = await api.post('/auth/token/', { username, password });
+      const { access, refresh} = response.data;
+      console.log(response.data);
+      // Stocker les tokens
+      localStorage.setItem('token', access);
+      localStorage.setItem('refreshToken', refresh);
+      const responseUser = await api.get('/users/me/');
+      const userData: User = responseUser.data as User;
+      // Mettre à jour l'état
+      setUser(userData);
+      
+      // Rediriger vers la page précédente ou la page d'accueil
+      const origin = location.state?.from || '/dashboard';
+      
+      // Rediriger les agriculteurs vers leur tableau de bord spécifique
+      if (userData.role === 'farmer') {
+        navigate('/farmer-dashboard');
+      } else {
+        navigate(origin);
+      }
+      
+      notifications.show({
+        title: 'Connexion réussie',
+        message: `Bienvenue, ${userData.username} !`,
+        color: 'green',
+      });
+    } catch (error: any) {
+      const message = error.response?.data?.detail || 'Identifiants incorrects';
+      notifications.show({
+        title: 'Erreur de connexion',
+        message,
+        color: 'red',
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-    return context
-}
+  };
 
-// Simulation d'une API d'authentification
-const authAPI = {
-    login: async (email: string, password: string): Promise<User> => {
-        // Simuler un délai réseau
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        // Vérifier les identifiants (simulation)
-        if (email === "demo@triprune.com" && password === "password") {
-            return {
-                id: "user-1",
-                email: "demo@triprune.com",
-                name: "Utilisateur Démo",
-                role: "user",
-                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=demo",
-                createdAt: new Date().toISOString(),
-            }
-        }
-
-        // Vérifier si l'utilisateur existe dans le localStorage
-        const users = JSON.parse(localStorage.getItem("triprune_users") || "[]")
-        const user = users.find((u: any) => u.email === email)
-
-        if (user && user.password === password) {
-            // Ne pas renvoyer le mot de passe
-            const { password, ...userWithoutPassword } = user
-            return userWithoutPassword
-        }
-
-        throw new Error("Identifiants invalides")
-    },
-
-    register: async (name: string, email: string, password: string): Promise<User> => {
-        // Simuler un délai réseau
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        // Vérifier si l'email est déjà utilisé
-        const users = JSON.parse(localStorage.getItem("triprune_users") || "[]")
-        if (users.some((u: any) => u.email === email)) {
-            throw new Error("Cet email est déjà utilisé")
-        }
-
-        // Créer un nouvel utilisateur
-        const newUser = {
-            id: `user-${Date.now()}`,
-            email,
-            name,
-            password, // Dans une vraie application, le mot de passe serait haché
-            role: "user" as const,
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-            createdAt: new Date().toISOString(),
-        }
-
-        // Sauvegarder l'utilisateur
-        users.push(newUser)
-        localStorage.setItem("triprune_users", JSON.stringify(users))
-
-        // Ne pas renvoyer le mot de passe
-        const { password: _, ...userWithoutPassword } = newUser
-        return userWithoutPassword
-    },
-
-    updateProfile: async (userId: string, userData: Partial<User>): Promise<User> => {
-        // Simuler un délai réseau
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        // Mettre à jour l'utilisateur dans le localStorage
-        const users = JSON.parse(localStorage.getItem("triprune_users") || "[]")
-        const userIndex = users.findIndex((u: any) => u.id === userId)
-
-        if (userIndex === -1) {
-            throw new Error("Utilisateur non trouvé")
-        }
-
-        // Mettre à jour les données de l'utilisateur
-        users[userIndex] = { ...users[userIndex], ...userData }
-        localStorage.setItem("triprune_users", JSON.stringify(users))
-
-        // Ne pas renvoyer le mot de passe
-        const { password, ...userWithoutPassword } = users[userIndex]
-        return userWithoutPassword
-    },
-}
-
-// Provider du contexte d'authentification
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null)
-    const [isLoading, setIsLoading] = useState<boolean>(true)
-    const [error, setError] = useState<string | null>(null)
-    const navigate = useNavigate()
-
-    // Vérifier si l'utilisateur est déjà connecté au chargement
-    useEffect(() => {
-        const storedUser = localStorage.getItem("triprune_current_user")
-        if (storedUser) {
-            setUser(JSON.parse(storedUser))
-        }
-        setIsLoading(false)
-    }, [])
-
-    // Fonction de connexion
-    const login = async (email: string, password: string) => {
-        try {
-            setIsLoading(true)
-            setError(null)
-            const userData = await authAPI.login(email, password)
-            setUser(userData)
-            localStorage.setItem("triprune_current_user", JSON.stringify(userData))
-            navigate("/dashboard")
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Une erreur est survenue lors de la connexion")
-        } finally {
-            setIsLoading(false)
-        }
+  // Inscription
+  const register = async (userData: any) => {
+    try {
+      setIsLoading(true);
+      await api.post('/auth/register/', userData);
+      
+      notifications.show({
+        title: 'Inscription réussie',
+        message: 'Veuillez vérifier votre email pour activer votre compte.',
+        color: 'green',
+      });
+      
+      navigate('/login');
+    } catch (error: any) {
+      const message = error.response?.data?.email?.[0] || 
+                     error.response?.data?.username?.[0] || 
+                     error.response?.data?.password?.[0] || 
+                     'Une erreur est survenue lors de l\'inscription';
+      
+      notifications.show({
+        title: 'Erreur d\'inscription',
+        message,
+        color: 'red',
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // Fonction d'inscription
-    const register = async (name: string, email: string, password: string) => {
-        try {
-            setIsLoading(true)
-            setError(null)
-            const userData = await authAPI.register(name, email, password)
-            setUser(userData)
-            localStorage.setItem("triprune_current_user", JSON.stringify(userData))
-            navigate("/dashboard")
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Une erreur est survenue lors de l'inscription")
-        } finally {
-            setIsLoading(false)
-        }
+  // Déconnexion
+  const logout = async () => {
+    try {
+      setIsLoading(true);
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      if (refreshToken) {
+        await api.post('/auth/logout/', { refresh: refreshToken });
+      }
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    } finally {
+      // Supprimer les tokens et l'utilisateur
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      setUser(null);
+      setIsLoading(false);
+      navigate('/login');
+      
+      notifications.show({
+        title: 'Déconnexion',
+        message: 'Vous avez été déconnecté avec succès.',
+        color: 'blue',
+      });
     }
+  };
 
-    // Fonction de déconnexion
-    const logout = () => {
-        setUser(null)
-        localStorage.removeItem("triprune_current_user")
-        navigate("/")
+  // Réinitialisation du mot de passe
+  const resetPassword = async (token: string, password: string) => {
+    try {
+      setIsLoading(true);
+      await api.post('/auth/password-reset/confirm/', { token, password });
+      
+      notifications.show({
+        title: 'Mot de passe réinitialisé',
+        message: 'Votre mot de passe a été réinitialisé avec succès.',
+        color: 'green',
+      });
+    } catch (error: any) {
+      const message = error.response?.data?.detail || 'Une erreur est survenue lors de la réinitialisation du mot de passe';
+      notifications.show({
+        title: 'Erreur',
+        message,
+        color: 'red',
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // Fonction de mise à jour du profil
-    const updateProfile = async (userData: Partial<User>) => {
-        if (!user) return
-
-        try {
-            setIsLoading(true)
-            setError(null)
-            const updatedUser = await authAPI.updateProfile(user.id, userData)
-            setUser(updatedUser)
-            localStorage.setItem("triprune_current_user", JSON.stringify(updatedUser))
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Une erreur est survenue lors de la mise à jour du profil")
-        } finally {
-            setIsLoading(false)
-        }
+  // Vérification de l'email
+  const verifyEmail = async (token: string) => {
+    try {
+      setIsLoading(true);
+      await api.post('/auth/verify-email/', { token });
+      
+      notifications.show({
+        title: 'Email vérifié',
+        message: 'Votre email a été vérifié avec succès. Vous pouvez maintenant vous connecter.',
+        color: 'green',
+      });
+    } catch (error: any) {
+      const message = error.response?.data?.detail || 'Une erreur est survenue lors de la vérification de l\'email';
+      notifications.show({
+        title: 'Erreur',
+        message,
+        color: 'red',
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // Fonction pour effacer les erreurs
-    const clearError = () => setError(null)
+  // Renvoyer l'email de vérification
+  const resendVerificationEmail = async (email: string) => {
+    try {
+      setIsLoading(true);
+      await api.post('/auth/resend-verification-email/', { email });
+      
+      notifications.show({
+        title: 'Email envoyé',
+        message: 'Un nouvel email de vérification a été envoyé à votre adresse.',
+        color: 'green',
+      });
+    } catch (error: any) {
+      const message = error.response?.data?.detail || 'Une erreur est survenue lors de l\'envoi de l\'email de vérification';
+      notifications.show({
+        title: 'Erreur',
+        message,
+        color: 'red',
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const value = {
+  // Mise à jour du profil
+  const updateProfile = async (userData: any) => {
+    try {
+      setIsLoading(true);
+      const response = await api.patch('/users/me/', userData);
+      setUser(response.data);
+      
+      notifications.show({
+        title: 'Profil mis à jour',
+        message: 'Votre profil a été mis à jour avec succès.',
+        color: 'green',
+      });
+    } catch (error: any) {
+      const message = error.response?.data?.detail || 'Une erreur est survenue lors de la mise à jour du profil';
+      notifications.show({
+        title: 'Erreur',
+        message,
+        color: 'red',
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Changement de mot de passe
+  const changePassword = async (oldPassword: string, newPassword: string) => {
+    try {
+      setIsLoading(true);
+      await api.post('/auth/change-password/', { old_password: oldPassword, new_password: newPassword });
+      
+      notifications.show({
+        title: 'Mot de passe changé',
+        message: 'Votre mot de passe a été changé avec succès.',
+        color: 'green',
+      });
+    } catch (error: any) {
+      const message = error.response?.data?.detail || 'Une erreur est survenue lors du changement de mot de passe';
+      notifications.show({
+        title: 'Erreur',
+        message,
+        color: 'red',
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
         user,
-        isLoading,
         isAuthenticated: !!user,
+        isLoading,
         login,
         register,
         logout,
+        resetPassword,
+        verifyEmail,
+        resendVerificationEmail,
         updateProfile,
-        error,
-        clearError,
-    }
+        changePassword,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
+export default AuthContext;
